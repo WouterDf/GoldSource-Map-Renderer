@@ -1,0 +1,20 @@
+* C++ Template Project
+
+** Building
+*** build
+Configure build with
+#+begin_src bash
+  cmake -S ./ -B ./build
+#+end_src
+
+build with:
+#+begin_src bash
+  cmake --build ./
+#+end_src
+
+after installing a vcpkg package, run:
+#+begin_src bash
+  vcpkg install
+  cmake --preset default
+#+end_src
+and then you can build again.

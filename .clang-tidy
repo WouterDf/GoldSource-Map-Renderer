@@ -1,0 +1,5 @@
+---
+Checks: '*,-llvmlibc-*,-fuchsia-*,-altera-*'
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+FormatStyle: none
