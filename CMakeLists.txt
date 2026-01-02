@@ -8,6 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(wouteropengl
     src/main.cpp
     src/assetloader.h
+    src/assetloader.cpp
     src/windowcontext.h
     src/shader.h
     src/shader.cpp
