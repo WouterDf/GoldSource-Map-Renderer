@@ -21,6 +21,7 @@ add_executable(wouteropengl
 find_package(SDL3 CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(simage REQUIRED)
+find_package(glm REQUIRED)
 
 # On macOS, explicitly use the system OpenGL framework
 if(APPLE)
@@ -31,6 +32,7 @@ if(APPLE)
         SDL3::SDL3
         GLEW::GLEW
         ${OPENGL_LIBRARY}
+        glm::glm-header-only
     )
 else()
     find_package(OpenGL REQUIRED)
@@ -40,6 +42,7 @@ else()
         SDL3::SDL3
         GLEW::GLEW
         OpenGL::GL
+        glm::glm-header-only
     )
 endif()
 

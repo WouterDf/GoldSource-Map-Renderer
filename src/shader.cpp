@@ -62,3 +62,10 @@ void Shader::Use() const
 void Shader::BindUniform(std::string name, int value) const {
      glUniform1i(glGetUniformLocation(programId, name.c_str()), value);
 }
+
+
+void Shader::BindUniform4f(std::string name, const GLfloat* value) const
+{
+     unsigned int transformLoc = glGetUniformLocation(programId, name.c_str());
+     glUniformMatrix4fv(transformLoc, 1, GL_FALSE, value);
+};

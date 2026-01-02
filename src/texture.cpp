@@ -1,6 +1,5 @@
 #include "texture.h"
 #include "assetloader.h"
-#include "renderer.h"
 #include "shader.h"
 #include <iostream>
 
@@ -34,6 +33,7 @@ void Texture::Load() {
 };
 
 void Texture::Use() {
-    glBindTexture(GL_TEXTURE_2D, this->textureId);
+     glActiveTexture(GL_TEXTURE0 + texturenum);
+     glBindTexture(GL_TEXTURE_2D, this->textureId);
 };
  
