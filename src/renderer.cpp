@@ -4,7 +4,7 @@
 #include "renderer.h"
 #include "shader.h"
 
-void Renderer::prepare() {
+void Renderer::Prepare() {
     float quadVertices[] = {
          // position         // color
          -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // bottom left
@@ -41,7 +41,7 @@ void Renderer::prepare() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 }
 
-void Renderer::drawFrame() {
+void Renderer::DrawFrame() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 

@@ -13,7 +13,6 @@ private :
      GLuint ebo;
 
 public:
-     explicit Renderer() {};
-     void prepare();
-     void drawFrame();
+     void Prepare();
+     void DrawFrame();
 };

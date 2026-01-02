@@ -12,7 +12,7 @@ int main()
     WindowContext windowContext{};
     Renderer renderer{};
 
-    renderer.prepare();
+    renderer.Prepare();
 
     bool done = false;
     while( !done )
@@ -25,7 +25,7 @@ int main()
             }
         }
 
-        renderer.drawFrame();
+        renderer.DrawFrame();
         SDL_GL_SwapWindow(windowContext.window);
     };
 
