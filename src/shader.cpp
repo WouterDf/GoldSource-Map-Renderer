@@ -26,6 +26,13 @@ Shader::Shader(std::string vertexPath, std::string fragmentPath)
 
     if( vertexSuccess && fragmentSuccess ) {
          std::cout << "Compiled shaders succesfully. \n";
+    } else {
+        char vertInfoLog[512];
+        char fragInfoLog[512];
+        glGetShaderInfoLog(vertexShader, 512, NULL, vertInfoLog);
+        glGetShaderInfoLog(fragmentShader, 512, NULL, fragInfoLog);
+
+        std::cout << vertInfoLog << "\n" << fragInfoLog << "\n";
     }
 
     this->programId = glCreateProgram();
@@ -50,4 +57,8 @@ Shader::Shader(std::string vertexPath, std::string fragmentPath)
 void Shader::Use() const
 {
      glUseProgram(programId);  
-}    
+}
+
+void Shader::BindUniform(std::string name, int value) const {
+     glUniform1i(glGetUniformLocation(programId, name.c_str()), value);
+}

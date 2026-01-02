@@ -1,5 +1,6 @@
 #include <fstream>
 #include <ostream>
+#include <simage.h>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -58,5 +59,11 @@ namespace AssetLoader {
           std::ostringstream output;
           output<< file.rdbuf();
           return output.str();
+     }
+
+     unsigned char* readImage(std::filesystem::path relativePath, int* width, int* height, int* nChannels)
+     {
+          std::filesystem::path imagePath = getAssetPath() / relativePath;
+          return simage_read_image(imagePath.c_str(), width, height, nChannels);
      }
 } // namespace AssetLoader

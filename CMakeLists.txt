@@ -14,18 +14,33 @@ add_executable(wouteropengl
     src/shader.cpp
     src/renderer.h
     src/renderer.cpp
+    src/texture.h
+    src/texture.cpp
         )
 
 find_package(SDL3 CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(simage REQUIRED)
 
 # On macOS, explicitly use the system OpenGL framework
 if(APPLE)
     find_library(OPENGL_LIBRARY OpenGL REQUIRED)
-    target_link_libraries(wouteropengl PRIVATE SDL3::SDL3 GLEW::GLEW ${OPENGL_LIBRARY})
+    target_link_libraries(wouteropengl
+        PRIVATE
+        simage::simage
+        SDL3::SDL3
+        GLEW::GLEW
+        ${OPENGL_LIBRARY}
+    )
 else()
     find_package(OpenGL REQUIRED)
-    target_link_libraries(wouteropengl PRIVATE SDL3::SDL3 GLEW::GLEW OpenGL::GL)
+    target_link_libraries(wouteropengl
+        PRIVATE
+        simage::simage
+        SDL3::SDL3
+        GLEW::GLEW
+        OpenGL::GL
+    )
 endif()
 
 # Copy assets directory to build directory
