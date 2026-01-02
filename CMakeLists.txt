@@ -9,7 +9,11 @@ add_executable(wouteropengl
     src/main.cpp
     src/assetloader.h
     src/windowcontext.h
-    )
+    src/shader.h
+    src/shader.cpp
+    src/renderer.h
+    src/renderer.cpp
+        )
 
 find_package(SDL3 CONFIG REQUIRED)
 find_package(GLEW REQUIRED)

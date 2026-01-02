@@ -1,0 +1,53 @@
+#include <iostream>
+#include <GL/glew.h>
+#include "shader.h"
+#include "assetloader.h"
+
+
+Shader::Shader(std::string vertexPath, std::string fragmentPath)
+{
+         std::string vertexShaderSourceStdStr = AssetLoader::readAssetToString(vertexPath);
+    std::string fragmentShaderSourceStdStr = AssetLoader::readAssetToString(fragmentPath);
+
+    const char* vertexShaderSource = vertexShaderSourceStdStr.c_str();
+    const char* fragmentShaderSource = fragmentShaderSourceStdStr.c_str();
+
+    uint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    uint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(vertexShader);
+    glCompileShader(fragmentShader);
+
+    int vertexSuccess;
+    int fragmentSuccess;
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &vertexSuccess);
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &fragmentSuccess);
+
+    if( vertexSuccess && fragmentSuccess ) {
+         std::cout << "Compiled shaders succesfully. \n";
+    }
+
+    this->programId = glCreateProgram();
+    glAttachShader(programId, vertexShader);
+    glAttachShader(programId, fragmentShader);
+    glLinkProgram(programId);
+
+    int linkSuccess;
+    char infoLog[512];
+    glGetProgramiv(programId, GL_LINK_STATUS, &linkSuccess);
+    if (!linkSuccess) {
+        glGetProgramInfoLog(programId, 512, NULL, infoLog);
+        std::cout << "Shader program linking failed:\n" << infoLog << "\n";
+    } else {
+        std::cout << "Shader program linked successfully.\n";
+    }
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+}
+
+void Shader::Use() const
+{
+     glUseProgram(programId);  
+}    
