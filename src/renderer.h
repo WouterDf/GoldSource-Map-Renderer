@@ -2,6 +2,7 @@
 
 #include <GL/glew.h>
 #include <OpenGL/gltypes.h>
+#include <SDL3/SDL_events.h>
 #include <memory>
 #include "shader.h"
 #include "texture.h"

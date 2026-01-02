@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SDL3/SDL_mouse.h>
 #define GL_SILENCE_DEPRECATION
 #include <GL/glew.h>
 #include "SDL3/SDL_init.h"
@@ -34,6 +35,7 @@ public:
             return;
         }
 
+        SDL_SetWindowRelativeMouseMode( window, true );
         SDL_ShowWindow(window);
 
         context = SDL_GL_CreateContext(window);
