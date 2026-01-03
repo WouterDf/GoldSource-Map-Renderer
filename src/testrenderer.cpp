@@ -86,6 +86,7 @@ void TestRenderer::Load() {
     this->texture2->Load();
 }
 
+float rot = 0;
 void TestRenderer::DrawFrame(float deltaTime) {
     glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -101,6 +102,10 @@ void TestRenderer::DrawFrame(float deltaTime) {
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view = camera->GetViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 1.0f, 10000.0f);
+
+    rot += 0.05 * deltaTime;
+    model = glm::rotate(model, glm::radians(rot), glm::vec3(.0f, 1.0f, .0f));
+
     shader->BindUniform4f("model", glm::value_ptr(model));
     shader->BindUniform4f("view", glm::value_ptr(view));
     shader->BindUniform4f("projection", glm::value_ptr(projection));

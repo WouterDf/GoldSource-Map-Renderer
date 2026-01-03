@@ -10,6 +10,30 @@
 #include <iostream>
 #include <sys/types.h>
 
+struct FrameTime {
+    int currentFrameTime = 0;
+    int lastFrameTime = 0;
+    int deltaTime = 0;
+
+    void FirstFrameBegin()
+    {
+        currentFrameTime = SDL_GetTicks();
+        lastFrameTime = SDL_GetTicks();
+        deltaTime = 0;
+    }
+
+    void FrameBegin()
+    {
+        currentFrameTime = SDL_GetTicks();
+        deltaTime = currentFrameTime - lastFrameTime;
+    }
+
+    void FrameEnd()
+    {
+      lastFrameTime = currentFrameTime;
+    }
+};
+
 void UpdateCamera(Camera* camera, float deltaTime)
 {
     float mouseX = 0;
@@ -54,7 +78,7 @@ int main()
     BSP::BSP map = AssetLoader::readBsp("maps/de_dust2.bsp");
 
     WindowContext windowContext{};
-    auto camera = Camera{glm::vec3(0.0f, 0.0f, 1000.0f), glm::vec3(.0f, .0f, -1.0f)};
+    auto camera = Camera{glm::vec3(0.0f, 0.0f, 1500.0f), glm::vec3(.0f, .0f, -1.0f)};
 
     TestRenderer testrenderer{};
     testrenderer.SetCamera(&camera);
@@ -67,8 +91,10 @@ int main()
 
     bool done = false;
 
+    FrameTime frameTime{};
     bool firstFrame = true;
-    unsigned int currentTime, lastTime, deltaTime;
+    uint frameCount = 0;
+    uint lastFpsCountTime = 0;
     while( !done )
     {
         SDL_Event event;
@@ -82,22 +108,30 @@ int main()
         if( firstFrame )
         {
             firstFrame = false;
-            currentTime = SDL_GetTicks();
-            lastTime = SDL_GetTicks();
-            deltaTime = 0;
+            frameTime.FirstFrameBegin();
             continue;
         }
-        currentTime = SDL_GetTicks();
-        deltaTime = currentTime - lastTime;
-        UpdateCamera(&camera, deltaTime);
+        frameTime.FrameBegin();
+        UpdateCamera(&camera, frameTime.deltaTime);
 
-        //testrenderer.DrawFrame(deltaTime);
-        bsprenderer.DrawFrame(deltaTime);
+        testrenderer.DrawFrame(frameTime.deltaTime);
+        //bsprenderer.DrawFrame(frameTime.deltaTime);
+
+        // Show FPS
+        frameCount++;
+        const uint SHOW_FPS_AT_MS = 10000;
+        if( frameTime.currentFrameTime - lastFpsCountTime > SHOW_FPS_AT_MS )
+        {
+             uint fps = frameCount * 1000 / (frameTime.currentFrameTime - lastFpsCountTime);
+             std::cout << "Frames per second: " << fps << "\n";
+             lastFpsCountTime = frameTime.currentFrameTime;
+             frameCount = 0;
+        }
 
         SDL_GL_SwapWindow(windowContext.window);
-        lastTime = currentTime;
-
+        frameTime.FrameEnd();
     };
 
     return 0;
 }
+

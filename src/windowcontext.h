@@ -44,7 +44,7 @@ public:
                     << SDL_GetError() << "\n";
             return;
         }
-
+        SDL_GL_SetSwapInterval(0);
         if (!SDL_GL_MakeCurrent(window, context)) {
             std::cerr << "SDL_GL_MakeCurrent failed: "
                     << SDL_GetError() << "\n";
