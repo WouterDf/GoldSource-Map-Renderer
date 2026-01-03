@@ -19,10 +19,14 @@ add_executable(wouteropengl
     src/bsprenderer.h
     src/texture.h
     src/texture.cpp
+    src/pngtexture.h
+    src/pngtexture.cpp
     src/camera.cpp
     src/camera.h
     src/bsp.h
     src/bsp.cpp
+    src/wad.h
+    src/wad.cpp
         )
 
 find_package(SDL3 CONFIG REQUIRED)

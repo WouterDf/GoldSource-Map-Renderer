@@ -3,3 +3,4 @@ build
 CMakeUserPresets.json
 vcpkg_installed
 assets/maps
+assets/textures

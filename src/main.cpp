@@ -3,6 +3,7 @@
 #include "bsprenderer.h"
 #include "camera.h"
 #include "testrenderer.h"
+#include "wad.h"
 #include "windowcontext.h"
 #include "SDL3/SDL_events.h"
 #include <SDL3/SDL_main.h>
@@ -76,6 +77,11 @@ int main()
 {
     std::cout << "Starting application. \n";
     BSP::BSP map = AssetLoader::ReadBSP("maps/de_dust2.bsp");
+    WAD::WAD hlWad{"textures/halflife.wad"};
+    std::cout << "Search texture 1: " << hlWad.Contains("SUBWAY_FLOOR1") << "\n";
+    std::cout << "Search texture 1: " << hlWad.Contains("SUBWAY_FLOOR2") << "\n";
+
+    hlWad.LoadTexture("SUBWAY_FLOOR1");
 
     WindowContext windowContext{};
     auto camera = Camera{glm::vec3(0.0f, 0.0f, 1500.0f), glm::vec3(.0f, .0f, -1.0f)};

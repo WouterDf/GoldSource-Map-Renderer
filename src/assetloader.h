@@ -2,6 +2,7 @@
 #include <string>
 #include <filesystem>
 #include "bsp.h"
+#include "wad.h"
 
 namespace AssetLoader {
 
@@ -14,5 +15,7 @@ namespace AssetLoader {
      unsigned char* readImage(std::filesystem::path relativePath, int* width, int* height, int* nChannels);
 
      BSP::BSP ReadBSP(std::filesystem::path relativePath);
+
+     std::ifstream ReadWAD(std::filesystem::path relativePath);
      
 } // namespace AssetLoader

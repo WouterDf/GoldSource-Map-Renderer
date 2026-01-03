@@ -1,4 +1,3 @@
-#include "bsp.h"
 #include <cstdint>
 #include <fstream>
 #include <glm/fwd.hpp>
@@ -9,13 +8,15 @@
 #include <stdexcept>
 #include <string>
 #include <filesystem>
-#include <vector>
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
 #endif
 
+#include "bsp.h"
+#include "wad.h"
 #include "assetloader.h"
+
 namespace AssetLoader {
      std::filesystem::path getExecutablePath()
      {
@@ -84,4 +85,19 @@ namespace AssetLoader {
 
           return BSP::ParseBSPFile(std::move(file));
     }
+
+
+     std::ifstream ReadWAD(std::filesystem::path relativePath)
+     {
+          std::filesystem::path mapPath = getAssetPath() / relativePath;
+          std::ifstream file(mapPath, std::ios::binary);
+          if( !file )
+          {
+               std::cerr << "WAD file not found: " << mapPath.string() << "\n";
+          } else {
+               std::cout << "WAD file loading: " << mapPath.string() << "\n";
+          }
+
+          return std::move(file);
+     }
 } // namespace AssetLoader

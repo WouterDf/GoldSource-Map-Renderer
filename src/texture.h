@@ -7,13 +7,11 @@ class Shader;
 
 class Texture {
 public:
-     Texture(std::string relativePath, std::string uniformName, Shader* shader, unsigned int texturenum);
-     void Load();
-     void Use();
-     
-private:
+     Texture(std::string uniformName, Shader* shader, unsigned int texturenum);
+     virtual void Load() = 0;
+     virtual void Use() = 0;
+protected:
      Shader* shader;
-     std::string relativePath;
      std::string uniformName;
      GLuint textureId;
      unsigned int texturenum = 0;

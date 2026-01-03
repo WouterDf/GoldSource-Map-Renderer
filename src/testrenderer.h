@@ -8,7 +8,7 @@
 #include "camera.h"
 #include "renderer.h"
 #include "shader.h"
-#include "texture.h"
+#include "pngtexture.h"
 
 namespace BSP {
 class BSP;
@@ -21,8 +21,8 @@ public:
      void SetCamera(Camera* cam) override;
 private :
      std::unique_ptr<Shader> shader;
-     std::unique_ptr<Texture> texture1;
-     std::unique_ptr<Texture> texture2;
+     std::unique_ptr<PNGTexture> texture1;
+     std::unique_ptr<PNGTexture> texture2;
      GLuint vao;
      GLuint vbo;
      GLuint ebo;

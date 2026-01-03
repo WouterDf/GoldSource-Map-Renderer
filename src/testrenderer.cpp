@@ -72,13 +72,13 @@ void TestRenderer::Load() {
 
 
     // Textures
-    this->texture1 = std::make_unique<Texture>(
+    this->texture1 = std::make_unique<PNGTexture>(
          "textures/wall.png",
          "texture1",
          shader.get(),
          0);
     this->texture1->Load();
-    this->texture2 = std::make_unique<Texture>(
+    this->texture2 = std::make_unique<PNGTexture>(
          "textures/wall2.png",
          "texture2",
          shader.get(),
