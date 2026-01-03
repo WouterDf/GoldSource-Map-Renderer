@@ -1,7 +1,8 @@
 #include "assetloader.h"
 #include "bsp.h"
+#include "bsprenderer.h"
 #include "camera.h"
-#include "renderer.h"
+#include "testrenderer.h"
 #include "windowcontext.h"
 #include "SDL3/SDL_events.h"
 #include <SDL3/SDL_main.h>
@@ -53,11 +54,16 @@ int main()
     BSP::BSP map = AssetLoader::readBsp("maps/de_dust2.bsp");
 
     WindowContext windowContext{};
-    Renderer renderer{};
     auto camera = Camera{glm::vec3(0.0f, 0.0f, 1000.0f), glm::vec3(.0f, .0f, -1.0f)};
-    renderer.SetCamera(&camera);
 
-    renderer.Prepare(&map);
+    TestRenderer testrenderer{};
+    testrenderer.SetCamera(&camera);
+    testrenderer.Load();
+
+    BSPRenderer bsprenderer{};
+    bsprenderer.SetCamera(&camera);
+    bsprenderer.SetMap(&map);
+    bsprenderer.Load();
 
     bool done = false;
 
@@ -84,7 +90,10 @@ int main()
         currentTime = SDL_GetTicks();
         deltaTime = currentTime - lastTime;
         UpdateCamera(&camera, deltaTime);
-        renderer.DrawFrame(deltaTime);
+
+        //testrenderer.DrawFrame(deltaTime);
+        bsprenderer.DrawFrame(deltaTime);
+
         SDL_GL_SwapWindow(windowContext.window);
         lastTime = currentTime;
 

@@ -13,7 +13,10 @@ add_executable(wouteropengl
     src/shader.h
     src/shader.cpp
     src/renderer.h
-    src/renderer.cpp
+    src/testrenderer.h
+    src/testrenderer.cpp
+    src/bsprenderer.cpp
+    src/bsprenderer.h
     src/texture.h
     src/texture.cpp
     src/camera.cpp
