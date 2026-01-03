@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <filesystem>
+#include "bsp.h"
+
 namespace AssetLoader {
 
      std::filesystem::path getExecutablePath();
@@ -10,5 +12,7 @@ namespace AssetLoader {
      std::string readAssetToString(std::filesystem::path relativePath);
 
      unsigned char* readImage(std::filesystem::path relativePath, int* width, int* height, int* nChannels);
+
+     BSP::BSP readBsp(std::filesystem::path relativePath);
      
 } // namespace AssetLoader

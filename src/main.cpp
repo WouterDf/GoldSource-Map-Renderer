@@ -1,3 +1,5 @@
+#include "assetloader.h"
+#include "bsp.h"
 #include "renderer.h"
 #include "windowcontext.h"
 #include "SDL3/SDL_events.h"
@@ -8,11 +10,12 @@
 int main()
 {
     std::cout << "Starting application. \n";
+    BSP::BSP map = AssetLoader::readBsp("maps/de_dust2.bsp");
 
     WindowContext windowContext{};
     Renderer renderer{};
 
-    renderer.Prepare();
+    renderer.Prepare(&map);
 
     bool done = false;
     while( !done )

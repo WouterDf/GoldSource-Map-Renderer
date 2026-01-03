@@ -7,6 +7,9 @@
 #include "shader.h"
 #include "texture.h"
 
+namespace BSP {
+class BSP;
+} // namespace BSP
 
 class Renderer {
 private :
@@ -17,7 +20,8 @@ private :
      GLuint vbo;
      GLuint ebo;
      GLuint texture;
+     int nIndices;
 public:
-     void Prepare();
+     void Prepare(BSP::BSP* map);
      void DrawFrame();
 };
