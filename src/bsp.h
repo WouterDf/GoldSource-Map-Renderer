@@ -47,6 +47,15 @@ namespace BSP {
           uint32_t nOffsets[MIPLEVELS];
      };
 
+     struct Textureinfo {
+          ValveVector3d vS;
+          float fSShift;
+          ValveVector3d vT;
+          float fTShift;
+          uint32_t iMiptex; // Index into textures array
+          uint32_t nFlags;  // Texture flags (0x1 for disabling lightmaps and subdiv surf [sky])
+     };
+
      struct Face {
           uint16_t iPlane;
           uint16_t nPlaneSide;
@@ -66,6 +75,7 @@ namespace BSP {
           char* entities;
           TextureHeader textureHeader;
           std::vector<uint32_t> textureOffsets;
+          std::vector<Textureinfo> textureInfos;
           std::vector<MipTex> textures;
           std::vector<ValveVector3d> vertices;
           std::vector<Face> faces;

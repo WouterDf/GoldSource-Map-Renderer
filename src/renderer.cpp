@@ -41,11 +41,9 @@ void Renderer::Prepare(BSP::BSP* level) {
 
                if (surfedge >= 0)
                {
-                    // Positive: use first vertex of edge
                     vertexIndex = level->edges[surfedge].iVertex[0];
                } else
                {
-                    // Negative: use second vertex of edge
                     vertexIndex = level->edges[-surfedge].iVertex[1];
                }
                faceVertices.push_back(vertexIndex);
@@ -61,23 +59,17 @@ void Renderer::Prepare(BSP::BSP* level) {
      };
      nIndices = mapindices.size();
 
-     std::cout << "Loaded " << vertices.size() / 3 << " vertices\n";
-     std::cout << "Generated " << nIndices << " indices (" << nIndices / 3 << " triangles)\n";
-     if (vertices.size() > 0) {
-          std::cout << "First vertex: " << vertices[0] << ", " << vertices[1] << ", " << vertices[2] << "\n";
-     }
-
     float quadVertices[] = {
-         // position         // color                // texture uv
-         -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-          0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, // bottom right
-          0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, // top right
-         -0.5f,  0.5f, 0.0f, 0.0f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f, // top left
+         // position         // texture uv
+         -500.0f, -500.0f, 0.0f,  0.0f, 0.0f, // bottom left
+          500.5f, -500.5f, 0.0f, 1.0f, 0.0f, // bottom right
+          500.5f,  500.5f, 0.0f, 1.0f, 1.0f, // top right
+         -500.5f,  500.5f, 0.0f, 0.0f, 1.0f, // top left
 
-         -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // 4 rear left
-          0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, // 5 rear right
-         -0.5f, -0.7f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // 6 front left
-          0.5f, -0.7f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, // 7 front right
+         -500.5f, -500.5f, 0.0f,  0.0f, 0.0f, // 4 rear left
+          500.5f, -500.5f, 0.0f,  1.0f, 0.0f, // 5 rear right
+         -500.5f, -0.7f, -0.5f,  0.0f, 1.0f, // 6 front left
+          500.5f, -0.7f, -0.5f,  1.0f, 1.0f, // 7 front right
      };
 
     GLuint indices[] = {
@@ -99,23 +91,31 @@ void Renderer::Prepare(BSP::BSP* level) {
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
         // Position (only 3 floats per vertex for BSP data)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
         // Color
     //glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9*sizeof(float), (void*)(3*sizeof(float)));
     //glEnableVertexAttribArray(1);
         // UV Coordinates
-    //glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9*sizeof(float), (void*)(7*sizeof(float)));
-    //glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glGenBuffers(1, &ebo);
 
-    // Push buffer data
+    // Push buffer data of BSP
+    //glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    //glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, mapindices.size() * sizeof(uint32_t), mapindices.data(), GL_STATIC_DRAW);
+    
+    // Push buffer data of quad
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof( quadVertices ), quadVertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mapindices.size() * sizeof(uint32_t), mapindices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof( indices ), indices, GL_STATIC_DRAW);
+
 
     // Textures
     this->texture1 = std::make_unique<Texture>(
@@ -135,7 +135,7 @@ void Renderer::Prepare(BSP::BSP* level) {
 
 float dt = 0.0f;
 
-glm::vec3 cameraPosition = glm::vec3(56, 288, 20.0f);
+glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 1000.0f);
 glm::vec3 cameraForward = glm::vec3(.0f, .0f, -1.0f);  // Initially looking in -X direction
 glm::vec3 cameraUp = glm::vec3(0, 1.0f, 0);
 float cameraSpeed = 0.5f;
@@ -183,6 +183,7 @@ void Renderer::DrawFrame() {
     {
          cameraPitch -= 0.01 * mouseY * cameraSensitivity * deltaTime;
     }
+
     cameraForward.x = cos(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
     cameraForward.y = sin(glm::radians(cameraPitch));
     cameraForward.z = sin(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
@@ -210,6 +211,7 @@ void Renderer::DrawFrame() {
     shader->BindUniform4f("view", glm::value_ptr(view));
     shader->BindUniform4f("projection", glm::value_ptr(projection));
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, (void*)(0*sizeof(unsigned int)));
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, (void*)(0*sizeof(unsigned int)));
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(0*sizeof(unsigned int)));
 }

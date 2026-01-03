@@ -79,6 +79,7 @@ namespace AssetLoader {
           const bool LOG_FACES = true;
           const bool LOG_EDGES = false;
           const bool LOG_SURFEDGES = false;
+          const bool LOG_TEXINFO = false;
 
           std::filesystem::path mapPath = getAssetPath() / relativePath;
           std::ifstream file(mapPath, std::ios::binary);
@@ -138,6 +139,33 @@ namespace AssetLoader {
             }
           }
           // TODO: Load texture data
+
+          // Texture infos
+          BSP::Lump textureInfoLump = map.header.lump[BSP::LUMP_TEXINFO];
+          int numTextureInfos = textureInfoLump.nLength / sizeof( BSP::Textureinfo );
+          file.seekg( textureInfoLump.nOffset );
+          map.textureInfos = std::vector<BSP::Textureinfo>{};
+          map.textureInfos.reserve( numTextureInfos );
+          for( int i = 0; i < numTextureInfos; i++ )
+          {
+               BSP::Textureinfo texinfo{};
+               file.read(reinterpret_cast<char*>(&texinfo), sizeof(texinfo));
+               map.textureInfos.push_back(texinfo);
+          }
+
+          if( LOG_TEXINFO )
+          {
+               std::cout << "Number of texture-info-structs: " << numTextureInfos << "\n";
+
+               for( const auto& texinfo : map.textureInfos )
+               {
+                    std::cout << "Texinfo vS: " << texinfo.vS.x << " " << texinfo.vS.y << " " << texinfo.vS.z << "\n";
+                    std::cout << "Texinfo vT: " << texinfo.vT.x << " " << texinfo.vT.y << " " << texinfo.vT.z << "\n";
+                    std::cout << "Texinfo SShift: " << texinfo.fSShift << "\n";
+                    std::cout << "Texinfo TShift: " << texinfo.fTShift << "\n";
+                    std::cout << "Texinfo miptex index: " << texinfo.iMiptex << "\n";
+               }
+          }
 
           // Vertices
           BSP::Lump verticesLump = map.header.lump[BSP::LUMP_VERTICES];
