@@ -17,7 +17,7 @@ class Renderer {
 public:
      void Prepare(BSP::BSP* map);
      void DrawFrame(float deltaTime);
-
+     void SetCamera(Camera* cam);
 private :
      std::unique_ptr<Shader> shader;
      std::unique_ptr<Texture> texture1;
@@ -27,7 +27,5 @@ private :
      GLuint ebo;
      GLuint texture;
      int nIndices;
-     Camera camera{glm::vec3(0.0f, 0.0f, 1000.0f), glm::vec3(.0f, .0f, -1.0f)};
-
-     void UpdateCamera(float deltaTime);
+     Camera* camera;
 };

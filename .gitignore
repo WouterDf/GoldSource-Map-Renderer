@@ -2,3 +2,4 @@ build
 .cache
 CMakeUserPresets.json
 vcpkg_installed
+assets/maps

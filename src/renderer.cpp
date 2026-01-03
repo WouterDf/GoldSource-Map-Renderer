@@ -7,7 +7,6 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/trigonometric.hpp>
-#include <iostream>
 #include <memory>
 #include <simage.h>
 #include <glm/glm.hpp>
@@ -15,9 +14,16 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "renderer.h"
+#include "camera.h"
 #include "shader.h"
 #include "texture.h"
 #include "bsp.h"
+
+
+void Renderer::SetCamera(Camera *cam)
+{
+     camera = cam;
+}    
 
 void Renderer::Prepare(BSP::BSP* level) {
      std::vector<float> vertices{};
@@ -133,47 +139,7 @@ void Renderer::Prepare(BSP::BSP* level) {
 
 }
 
-void Renderer::UpdateCamera(float deltaTime)
-{
-    float mouseX = 0;
-    float mouseY = 0;
-    auto camMove = glm::vec3(.0f);
-    const bool* keyStates = SDL_GetKeyboardState(nullptr);
-    if( keyStates[SDL_SCANCODE_W] )
-    {
-        camMove -= glm::vec3(0, 0, 1);
-    }
-    if( keyStates[SDL_SCANCODE_S] )
-    {
-        camMove += glm::vec3(0, 0, 1);
-    }
-    if( keyStates[SDL_SCANCODE_A] )
-    {
-        camMove -= glm::vec3(1, 0, 0);
-    }
-    if( keyStates[SDL_SCANCODE_D] )
-    {
-        camMove += glm::vec3(1, 0, 0);
-    }
-    camera.Move(camMove, deltaTime);
-    SDL_GetRelativeMouseState(&mouseX, &mouseY);
-
-    float cameraPitch = 0;
-    float cameraYaw = 0;
-    if (mouseX != 0)
-    {
-         cameraYaw += 0.01 * mouseX;
-    }
-    if (mouseY != 0)
-    {
-         cameraPitch -= 0.01 * mouseY;
-    }
-    camera.Rotate(cameraPitch, cameraYaw, deltaTime);
-};
-
 void Renderer::DrawFrame(float deltaTime) {
-    UpdateCamera(deltaTime);
-
     glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);  
@@ -186,7 +152,7 @@ void Renderer::DrawFrame(float deltaTime) {
     // Uniform
     shader->Use();
     glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view = camera.GetViewMatrix();
+    glm::mat4 view = camera->GetViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 1.0f, 10000.0f);
     shader->BindUniform4f("model", glm::value_ptr(model));
     shader->BindUniform4f("view", glm::value_ptr(view));
