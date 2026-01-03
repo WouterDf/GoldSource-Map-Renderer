@@ -13,6 +13,6 @@ namespace AssetLoader {
 
      unsigned char* readImage(std::filesystem::path relativePath, int* width, int* height, int* nChannels);
 
-     BSP::BSP readBsp(std::filesystem::path relativePath);
+     BSP::BSP ReadBSP(std::filesystem::path relativePath);
      
 } // namespace AssetLoader

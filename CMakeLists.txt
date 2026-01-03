@@ -21,6 +21,8 @@ add_executable(wouteropengl
     src/texture.cpp
     src/camera.cpp
     src/camera.h
+    src/bsp.h
+    src/bsp.cpp
         )
 
 find_package(SDL3 CONFIG REQUIRED)

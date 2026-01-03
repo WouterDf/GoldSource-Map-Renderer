@@ -75,7 +75,7 @@ void UpdateCamera(Camera* camera, float deltaTime)
 int main()
 {
     std::cout << "Starting application. \n";
-    BSP::BSP map = AssetLoader::readBsp("maps/de_dust2.bsp");
+    BSP::BSP map = AssetLoader::ReadBSP("maps/de_dust2.bsp");
 
     WindowContext windowContext{};
     auto camera = Camera{glm::vec3(0.0f, 0.0f, 1500.0f), glm::vec3(.0f, .0f, -1.0f)};

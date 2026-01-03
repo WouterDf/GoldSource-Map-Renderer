@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <fstream>
 #include <vector>
 
 namespace BSP {
@@ -82,5 +83,7 @@ namespace BSP {
           std::vector<Edge> edges;
           std::vector<int32_t> surfEdges;
      };
+
+     BSP ParseBSPFile(std::ifstream relativePath);
 } // namespace BSP
 
