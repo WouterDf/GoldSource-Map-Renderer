@@ -4,6 +4,7 @@
 #include "windowcontext.h"
 #include "SDL3/SDL_events.h"
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_timer.h>
 #include <iostream>
 #include <sys/types.h>
 
@@ -18,6 +19,9 @@ int main()
     renderer.Prepare(&map);
 
     bool done = false;
+
+    bool firstFrame = true;
+    unsigned int currentTime, lastTime, deltaTime;
     while( !done )
     {
         SDL_Event event;
@@ -28,8 +32,22 @@ int main()
             }
         }
 
-        renderer.DrawFrame();
+        if( firstFrame )
+        {
+            firstFrame = false;
+            currentTime = SDL_GetTicks();
+            lastTime = SDL_GetTicks();
+            deltaTime = 0;
+            continue;
+        }
+        currentTime = SDL_GetTicks();
+        deltaTime = currentTime - lastTime;
+
+
+        renderer.DrawFrame(deltaTime);
         SDL_GL_SwapWindow(windowContext.window);
+        lastTime = currentTime;
+
     };
 
     return 0;

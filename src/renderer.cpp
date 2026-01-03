@@ -133,67 +133,50 @@ void Renderer::Prepare(BSP::BSP* level) {
 
 }
 
-float dt = 0.0f;
-
-glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 1000.0f);
-glm::vec3 cameraForward = glm::vec3(.0f, .0f, -1.0f);  // Initially looking in -X direction
-glm::vec3 cameraUp = glm::vec3(0, 1.0f, 0);
-float cameraSpeed = 0.5f;
-float cameraSensitivity = 1.0f;
-float cameraYaw = -90.0;
-float cameraPitch = 0.0f;
-
-float mouseX, mouseY;
-unsigned int currentTime = 0, lastTime, deltaTime;
-void Renderer::DrawFrame() {
-     if (currentTime == 0)
-     {
-          currentTime = SDL_GetTicks();
-          lastTime = SDL_GetTicks();
-          deltaTime = 0;
-          return;
-     }
-     currentTime = SDL_GetTicks();
-     deltaTime = currentTime - lastTime;
-     lastTime = currentTime;
-
+void Renderer::UpdateCamera(float deltaTime)
+{
+    float mouseX = 0;
+    float mouseY = 0;
+    auto camMove = glm::vec3(.0f);
     const bool* keyStates = SDL_GetKeyboardState(nullptr);
     if( keyStates[SDL_SCANCODE_W] )
     {
-        cameraPosition -= glm::vec3(0, 0, cameraSpeed * deltaTime);
+        camMove -= glm::vec3(0, 0, 1);
     }
     if( keyStates[SDL_SCANCODE_S] )
     {
-        cameraPosition += glm::vec3(0, 0, cameraSpeed * deltaTime);
+        camMove += glm::vec3(0, 0, 1);
     }
     if( keyStates[SDL_SCANCODE_A] )
     {
-        cameraPosition -= glm::vec3(cameraSpeed * deltaTime, 0, 0);
+        camMove -= glm::vec3(1, 0, 0);
     }
     if( keyStates[SDL_SCANCODE_D] )
     {
-        cameraPosition += glm::vec3(cameraSpeed * deltaTime, 0, 0);
+        camMove += glm::vec3(1, 0, 0);
     }
+    camera.Move(camMove, deltaTime);
     SDL_GetRelativeMouseState(&mouseX, &mouseY);
+
+    float cameraPitch = 0;
+    float cameraYaw = 0;
     if (mouseX != 0)
     {
-         cameraYaw += 0.01 * mouseX * cameraSensitivity * deltaTime;
+         cameraYaw += 0.01 * mouseX;
     }
     if (mouseY != 0)
     {
-         cameraPitch -= 0.01 * mouseY * cameraSensitivity * deltaTime;
+         cameraPitch -= 0.01 * mouseY;
     }
+    camera.Rotate(cameraPitch, cameraYaw, deltaTime);
+};
 
-    cameraForward.x = cos(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
-    cameraForward.y = sin(glm::radians(cameraPitch));
-    cameraForward.z = sin(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
-    cameraForward = glm::normalize(cameraForward);
+void Renderer::DrawFrame(float deltaTime) {
+    UpdateCamera(deltaTime);
 
-    dt += 0.4f;
     glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);  
-
     
     shader->Use();
     texture1->Use();
@@ -203,9 +186,7 @@ void Renderer::DrawFrame() {
     // Uniform
     shader->Use();
     glm::mat4 model = glm::mat4(1.0f);
-    // Don't rotate for now - just render the map as-is
-    // model = glm::rotate(model, glm::radians(dt), glm::vec3(0.0, 1.0, 0.0f));
-    glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraForward, cameraUp);
+    glm::mat4 view = camera.GetViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 1.0f, 10000.0f);
     shader->BindUniform4f("model", glm::value_ptr(model));
     shader->BindUniform4f("view", glm::value_ptr(view));
