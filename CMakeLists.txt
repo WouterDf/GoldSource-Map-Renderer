@@ -17,6 +17,8 @@ add_executable(wouteropengl
     src/testrenderer.cpp
     src/bsprenderer.cpp
     src/bsprenderer.h
+    src/bsprenderbatch.h
+    src/bsprenderbatch.cpp
     src/texture.h
     src/texture.cpp
     src/pngtexture.h

@@ -8,8 +8,8 @@ namespace BSP {
     {
           const bool LOG_LUMP_OFFSETS = false;
           const bool LOG_TEXTURES = false;
-          const bool LOG_VERTICES = true;
-          const bool LOG_FACES = true;
+          const bool LOG_VERTICES = false;
+          const bool LOG_FACES = false;
           const bool LOG_EDGES = false;
           const bool LOG_SURFEDGES = false;
           const bool LOG_TEXINFO = false;

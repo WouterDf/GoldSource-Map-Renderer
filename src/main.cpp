@@ -3,7 +3,6 @@
 #include "bsprenderer.h"
 #include "camera.h"
 #include "testrenderer.h"
-#include "wad.h"
 #include "windowcontext.h"
 #include "SDL3/SDL_events.h"
 #include <SDL3/SDL_main.h>
@@ -115,8 +114,8 @@ int main()
         frameTime.FrameBegin();
         UpdateCamera(&camera, frameTime.deltaTime);
 
-        testrenderer.DrawFrame(frameTime.deltaTime);
-        //bsprenderer.DrawFrame(frameTime.deltaTime);
+        //testrenderer.DrawFrame(frameTime.deltaTime);
+        bsprenderer.DrawFrame(frameTime.deltaTime);
 
         // Show FPS
         frameCount++;

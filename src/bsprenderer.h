@@ -5,6 +5,9 @@
 #include <SDL3/SDL_events.h>
 #include <glm/ext/vector_float3.hpp>
 #include <memory>
+#include <vector>
+#include "WADTexture.h"
+#include "bsprenderbatch.h"
 #include "camera.h"
 #include "renderer.h"
 #include "shader.h"
@@ -35,4 +38,6 @@ private :
     Camera* camera;
     BSP::BSP* map;
     std::unique_ptr<WAD::WAD> wad;
+    std::vector<BSPRenderBatch> renderBatches;
+    std::vector<WADTexture> textureArray;
 };

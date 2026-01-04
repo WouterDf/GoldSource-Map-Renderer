@@ -33,6 +33,7 @@ void BSPRenderer::Load() {
      std::vector<float> vertices{};
      std::vector<uint32_t> mapindices{};
 
+     // TODO: Populate renderBatches
      for( const auto& vert : map->vertices )
      {
           vertices.push_back(vert.x);
@@ -43,6 +44,7 @@ void BSPRenderer::Load() {
      for( const auto& face : map->faces )
      {
           // First, build the vertex list for this face
+          
           std::vector<uint32_t> faceVertices{};
           for ( int i = 0; i < face.nEdges; i++ )
           {
