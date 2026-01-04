@@ -48,8 +48,8 @@ namespace WAD {
          // Check if WAD-file contains a texture by name
          bool Contains(std::string textureName);
 
-                  // Load raw texture data
-         std::vector<uint8_t> LoadTexture(std::string textureName);
+         // Load raw texture data
+         std::vector<uint8_t> LoadTexture(std::string textureName, unsigned int* width, unsigned int* height);
 
     private:
          std::string m_filename;
@@ -60,6 +60,7 @@ namespace WAD {
 
          // Get DirEntry (info) for a texture name
          DirEntry GetInfo(std::string textureName);
+
     };
 
 } // namespace WAD

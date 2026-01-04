@@ -9,6 +9,7 @@
 #include "renderer.h"
 #include "shader.h"
 #include "pngtexture.h"
+#include "wad.h"
 
 namespace BSP {
 class BSP;
@@ -17,10 +18,10 @@ class BSP;
 
 class BSPRenderer : public Renderer {
 public:
-     void Load() override;
-     void DrawFrame(float deltaTime) override;
-     void SetCamera(Camera* cam) override;
-     void SetMap(BSP::BSP* map);
+    void Load() override;
+    void DrawFrame(float deltaTime) override;
+    void SetCamera(Camera* cam) override;
+    void SetMap(BSP::BSP* map);
 
 private :
     std::unique_ptr<Shader> shader;
@@ -33,4 +34,5 @@ private :
     int nIndices;
     Camera* camera;
     BSP::BSP* map;
+    std::unique_ptr<WAD::WAD> wad;
 };

@@ -14,6 +14,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "testrenderer.h"
+#include "WADTexture.h"
 #include "camera.h"
 #include "shader.h"
 #include "texture.h"
@@ -77,13 +78,25 @@ void TestRenderer::Load() {
          "texture1",
          shader.get(),
          0);
-    this->texture1->Load();
+    //this->texture1->Load();
     this->texture2 = std::make_unique<PNGTexture>(
          "textures/wall2.png",
          "texture2",
          shader.get(),
          1);
-    this->texture2->Load();
+    //this->texture2->Load();
+
+    this->wad = std::make_unique<WAD::WAD>("textures/halflife.wad");
+    //hlWad.LoadTexture("SUBWAY_FLOOR1");
+    this->texture3 = std::make_unique<WADTexture>(
+         "FIFTIES_WALL6B",
+         //"FIFTIES_WALL6B",
+         wad.get(),
+         "texture1",
+         shader.get(),
+         0
+         );
+    this->texture3->Load();
 }
 
 float rot = 0;
@@ -93,8 +106,9 @@ void TestRenderer::DrawFrame(float deltaTime) {
     glEnable(GL_DEPTH_TEST);  
     
     shader->Use();
-    texture1->Use();
-    texture2->Use();
+    //texture1->Use();
+    //texture2->Use();
+    texture3->Use();
     glBindVertexArray(vao);
     
     // Uniform

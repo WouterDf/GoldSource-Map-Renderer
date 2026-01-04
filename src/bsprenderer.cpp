@@ -7,18 +7,17 @@
 #include <SDL3/SDL_timer.h>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
-#include <glm/trigonometric.hpp>
-#include <memory>
-#include <simage.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/trigonometric.hpp>
+#include <memory>
+#include <simage.h>
 
-#include "bsprenderer.h"
+#include "bsp.h"
 #include "camera.h"
 #include "shader.h"
 #include "texture.h"
-#include "bsp.h"
 
 
 void BSPRenderer::SetCamera(Camera *cam)
