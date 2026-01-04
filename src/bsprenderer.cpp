@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/quaternion_geometric.hpp>
+#include <glm/ext/vector_float3.hpp>
 #include <glm/fwd.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -19,6 +21,7 @@
 #include "bsp.h"
 #include "bsprenderbatch.h"
 #include "camera.h"
+#include "pngtexture.h"
 #include "shader.h"
 #include "texture.h"
 
@@ -33,7 +36,7 @@ void BSPRenderer::SetMap(BSP::BSP *map) {
 }
 
 void BSPRenderer::Load() {
-     const uint8_t ATTRIBUTES_PER_VERTEX = 3;
+     const uint8_t ATTRIBUTES_PER_VERTEX = 5;
 
      std::vector<float> vertexBufferData{};
      std::vector<uint32_t> elementBufferData{};
@@ -49,6 +52,8 @@ void BSPRenderer::Load() {
 
           // Store all BSP Vertex indices for each face
           std::vector<uint32_t> faceVertexBSPIndices{};
+
+
           for ( int i = 0; i < face.nEdges; i++ )
           {
                int32_t surfedge = map->surfEdges.at(face.iFirstEdge + i);
@@ -64,12 +69,23 @@ void BSPRenderer::Load() {
                faceVertexBSPIndices.push_back(vertexIndex);
           }
 
+          BSP::Textureinfo textureInfo = map->textureInfos[face.iTextureInfo];
+          BSP::MipTex textureMip = map->textures[textureInfo.iMiptex];
           // Add vertices to the VBO
           for( const uint32_t& bspVertexIndex : faceVertexBSPIndices )
           {
-               faceVertexBuffer.push_back( map->vertices[bspVertexIndex].x );
-               faceVertexBuffer.push_back( map->vertices[bspVertexIndex].z );
-               faceVertexBuffer.push_back( map->vertices[bspVertexIndex].y );
+               BSP::ValveVector3d vPos = map->vertices[bspVertexIndex];
+               faceVertexBuffer.push_back( vPos.x );
+               faceVertexBuffer.push_back( vPos.z );
+               faceVertexBuffer.push_back( vPos.y );
+               auto glmPos = glm::vec3(vPos.x, vPos.z, vPos.y);
+               auto glmS = glm::vec3(textureInfo.vS.x, textureInfo.vS.z, textureInfo.vS.y);
+               auto glmT = glm::vec3(textureInfo.vT.x, textureInfo.vT.z, textureInfo.vT.y);
+
+               float u = (glm::dot(glmPos, glmS) + textureInfo.fSShift) / textureMip.nWidth;
+               float v = (glm::dot(glmPos, glmT) + textureInfo.fTShift) / textureMip.nHeight;
+               faceVertexBuffer.push_back(u);
+               faceVertexBuffer.push_back(v);
           }
 
           // Triangulate using triangle fan (v0, v1, v2), (v0, v2, v3), etc.
@@ -102,22 +118,31 @@ void BSPRenderer::Load() {
           this->renderBatches.push_back(renderBatch);
      };
 
-     nIndices = elementBufferData.size();
-
     // Shaders
     this->shader = std::make_unique<Shader>(
          "shaders/bsp.vert",
          "shaders/bsp.frag"
          );
 
+    // Test texture
+    texture1 = std::make_unique<PNGTexture>(
+        "textures/wall.png",
+         "texture1",
+         shader.get(),
+         0
+         );
+    texture1->Load();
     // buffers
     glGenVertexArrays(1, &this->vao);
     glBindVertexArray(vao);
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     // Attrib Position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    // Attrib UV
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)2);
+    glEnableVertexAttribArray(1);
 
     glGenBuffers(1, &ebo);
 
@@ -136,9 +161,6 @@ void BSPRenderer::DrawFrame(float deltaTime) {
     
     shader->Use();
     glBindVertexArray(vao);
-    
-    // Uniform
-    shader->Use();
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view = camera->GetViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 1.0f, 10000.0f);
@@ -146,6 +168,14 @@ void BSPRenderer::DrawFrame(float deltaTime) {
     shader->BindUniform4f("view", glm::value_ptr(view));
     shader->BindUniform4f("projection", glm::value_ptr(projection));
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, (void*)(0*sizeof(unsigned int)));
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    for( const auto& renderBatch : this->renderBatches )
+    {
+         texture1->Use();
+        glDrawElements(GL_TRIANGLES,
+                       renderBatch.indexLength,
+                       GL_UNSIGNED_INT,
+                       (void*)(renderBatch.indexOffset*sizeof(unsigned int)));
+    }
 }
