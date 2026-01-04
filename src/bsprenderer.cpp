@@ -5,8 +5,10 @@
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_timer.h>
+#include <cstdint>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/fwd.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -15,6 +17,7 @@
 #include <simage.h>
 
 #include "bsp.h"
+#include "bsprenderbatch.h"
 #include "camera.h"
 #include "shader.h"
 #include "texture.h"
@@ -30,22 +33,22 @@ void BSPRenderer::SetMap(BSP::BSP *map) {
 }
 
 void BSPRenderer::Load() {
-     std::vector<float> vertices{};
-     std::vector<uint32_t> mapindices{};
+     const uint8_t ATTRIBUTES_PER_VERTEX = 3;
 
-     // TODO: Populate renderBatches
-     for( const auto& vert : map->vertices )
-     {
-          vertices.push_back(vert.x);
-          vertices.push_back(vert.z);
-          vertices.push_back(vert.y);
-     }
-
+     std::vector<float> vertexBufferData{};
+     std::vector<uint32_t> elementBufferData{};
+     
+     // Build a local vertex- and index-buffer for each face
+     // Generate a RenderBatch for each face
      for( const auto& face : map->faces )
      {
-          // First, build the vertex list for this face
-          
-          std::vector<uint32_t> faceVertices{};
+          // Local vertex buffer
+          std::vector<float> faceVertexBuffer{};
+          // Local index buffer
+          std::vector<uint32_t> faceIndexBuffer{};
+
+          // Store all BSP Vertex indices for each face
+          std::vector<uint32_t> faceVertexBSPIndices{};
           for ( int i = 0; i < face.nEdges; i++ )
           {
                int32_t surfedge = map->surfEdges.at(face.iFirstEdge + i);
@@ -58,18 +61,48 @@ void BSPRenderer::Load() {
                {
                     vertexIndex = map->edges[-surfedge].iVertex[1];
                }
-               faceVertices.push_back(vertexIndex);
+               faceVertexBSPIndices.push_back(vertexIndex);
           }
 
-          // Now triangulate using triangle fan (v0, v1, v2), (v0, v2, v3), etc.
+          // Add vertices to the VBO
+          for( const uint32_t& bspVertexIndex : faceVertexBSPIndices )
+          {
+               faceVertexBuffer.push_back( map->vertices[bspVertexIndex].x );
+               faceVertexBuffer.push_back( map->vertices[bspVertexIndex].z );
+               faceVertexBuffer.push_back( map->vertices[bspVertexIndex].y );
+          }
+
+          // Triangulate using triangle fan (v0, v1, v2), (v0, v2, v3), etc.
+          // and add incides to local EBO.
           for ( int i = 1; i < face.nEdges - 1; i++ )
           {
-               mapindices.push_back(faceVertices[0]);     // First vertex
-               mapindices.push_back(faceVertices[i]);     // Current vertex
-               mapindices.push_back(faceVertices[i + 1]); // Next vertex
+               faceIndexBuffer.push_back( 0 );     // First vertex
+               faceIndexBuffer.push_back( i );     // Current vertex
+               faceIndexBuffer.push_back( i + 1 ); // Next vertex
           }
+
+          uint32_t prevElementBufferSize = elementBufferData.size();
+          uint32_t prevVertexBufferSize = vertexBufferData.size();
+
+          // Concat local buffers to global buffers.
+          for( const auto& vertex : faceVertexBuffer )
+          {
+               vertexBufferData.push_back(vertex);
+          }
+
+          for( const auto& index : faceIndexBuffer )
+          {
+               elementBufferData.push_back( index + prevVertexBufferSize / ATTRIBUTES_PER_VERTEX);
+          }
+
+          // Create RenderBatch for face
+          BSPRenderBatch renderBatch{};
+          renderBatch.indexOffset = prevElementBufferSize;
+          renderBatch.indexLength = elementBufferData.size() - prevElementBufferSize;
+          this->renderBatches.push_back(renderBatch);
      };
-     nIndices = mapindices.size();
+
+     nIndices = elementBufferData.size();
 
     // Shaders
     this->shader = std::make_unique<Shader>(
@@ -90,10 +123,10 @@ void BSPRenderer::Load() {
 
     // Push buffer data of BSP
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexBufferData.size() * sizeof(float), vertexBufferData.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mapindices.size() * sizeof(uint32_t), mapindices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBufferData.size() * sizeof(uint32_t), elementBufferData.data(), GL_STATIC_DRAW);
 }
 
 void BSPRenderer::DrawFrame(float deltaTime) {
