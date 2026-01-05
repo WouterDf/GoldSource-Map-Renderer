@@ -6,6 +6,11 @@
 - Loads level geometry from BSP-files
 - Loads textures from WAD-archives
 - FPS-style flying camera
+  
+## Motivation
+I chose this project as a non-trivial use-case for studying low-level graphics programming / OpenGL (something that goes beyond rendering a triangle). Additionally, I wanted to get a deeper understanding of how classic engines from the Quake-era worked. 
+
+Also, I grew up with Half-Life and Counter-Strike ❤️.
 
 ## Screenshots
 
@@ -14,22 +19,37 @@
 | <img src="./screenshots/dedust.gif" width="400"/> | <img src="./screenshots/csassault.gif" width="400"/> |
 
 
+  
+## Running the application
+While everything has been set up to be easily portable, the build has only been tested with Apple Cland on macOS Tahoe 26.0.1.
 
-## Building
-### build
-Configure build with
+### Assets
+As Valve's original maps and texture archives are copyrighted they are not distributed in this repository. If you own a copy of Half-life or Counter-Strike you can use their BSP- and WAD-files. The engine expects maps (BSP-files) to be included in `APP_ROOT/assets/maps/` and texture archives to be included in `APP_ROOT/assets/textures`. If the renderer doesn't find a texture, it skips rendering that plane.
+
+### Build
+
+This project uses **CMake** with **Vcpkg** for dependency management. 
+
+Prerequisites:
+- CMake >= 3.21
+- Vcpkg
+- A C++20 compiler
+
+Vcpkg needs to be set up for this project to build. Usually this requires creating your own `CMakeUserPresets.json` in the repository root. For more instructions, check the [Vcpkg documentation](https://learn.microsoft.com/vcpkg/get_started/get-started).
+
+Resolve all dependencies first with
 ``` bash
-  cmake -S ./ -B ./build
+vcpkg install
+cmake --preset default
 ```
 
 build with:
 ``` bash
-  cmake --build ./
+cmake --build build
 ```
 
-after installing a vcpkg package, run:
-```
-  vcpkg install
-  cmake --preset default
-```
-and then you can build again.
+## Inspiration and resources
+I used the resources listed here for documentation on the inner workings of the GoldSrc-engine. They're awesome.
+- [OGS](https://github.com/headcrab-junkyard/OGS) - An open-source GoldSrc engine clone.
+- [Valve Developer Community](https://developer.valvesoftware.com/wiki/BSP_(GoldSrc)) - Wiki on GoldSrc BSP file format.
+- [HL Texture Tools](https://github.com/yuraj11/HL-Texture-Tools) - Create and view wad and spr files
