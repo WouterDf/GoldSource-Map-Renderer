@@ -21,7 +21,7 @@ Also, I grew up with Half-Life and Counter-Strike ❤️.
 
   
 ## Running the application
-While everything has been set up to be easily portable, the build has only been tested with Apple Cland on macOS Tahoe 26.0.1.
+While everything has been set up to be easily portable, the build has only been tested with Apple Clangd on macOS Tahoe 26.0.1.
 
 ### Assets
 As Valve's original maps and texture archives are copyrighted they are not distributed in this repository. If you own a copy of Half-life or Counter-Strike you can use their BSP- and WAD-files. The engine expects maps (BSP-files) to be included in `APP_ROOT/assets/maps/` and texture archives to be included in `APP_ROOT/assets/textures`. If the renderer doesn't find a texture, it skips rendering that plane.
