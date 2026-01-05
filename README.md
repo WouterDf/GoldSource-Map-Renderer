@@ -1,6 +1,13 @@
-# GoldSource Map Renderer
+# GoldSrc Map Renderer
 
-> A project for rendering GoldSrc BSP Maps (Half-Life, Counter-Strike 1.6) using C++ and modern OpenGL.
+> A renderer for Valve GoldSrc maps (Half-Life, Counter-Strike 1.6, ...).
+
+- Modern C++ and OpenGL
+- Loads level geometry from BSP-files
+- Loads textures from WAD-archives
+- FPS-style flying camera
+
+## Screenshots
 
 | de_dust | cs_assault |
 |--------|------------|
@@ -11,18 +18,18 @@
 ## Building
 ### build
 Configure build with
-#+begin_src bash
+``` bash
   cmake -S ./ -B ./build
-#+end_src
+```
 
 build with:
-#+begin_src bash
+``` bash
   cmake --build ./
-#+end_src
+```
 
 after installing a vcpkg package, run:
-#+begin_src bash
+```
   vcpkg install
   cmake --preset default
-#+end_src
+```
 and then you can build again.
