@@ -1,4 +1,5 @@
-* C++ Template Project
+* GoldSource Map Renderer
+![dedust](https://github.com/WouterDf/GoldSource-Map-Renderer/blob/622669469543d95c9940eb379202ad29ea38d217/screenshots/dedust.gif)
 
 ** Building
 *** build
