@@ -1,7 +1,9 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <fstream>
+#include <string>
 #include <sys/_types/_u_int32_t.h>
 #include <vector>
 
@@ -39,6 +41,12 @@ namespace WAD {
          uint32_t offsets[MIPLEVELS];
     };
 
+    /**
+    * Texture names can start with a prefix (NAME -> +0NAME or NAME -> -5NAME). These
+    * prefixes conflict when the renderer does texture lookups.
+    */
+    void NormalizeTextureName(char* name);
+
     // Represents a single WAD-file
     class WAD {
     public:
@@ -62,5 +70,29 @@ namespace WAD {
          DirEntry GetInfo(std::string textureName);
 
     };
+
+     /**
+      * Represents all WAD files for a game.
+      */
+     class WADArchive {
+     public:
+          WADArchive(std::vector<std::string> filesnames);
+
+          // Check if WAD-file contains a texture by name
+          bool Contains(std::string textureName);
+
+          // Load raw texture data
+          std::vector<uint8_t> LoadTexture(
+               std::string textureName,
+               unsigned int* width,
+               unsigned int* height);
+
+     private:
+
+          // Find the WAD with textureName
+          WAD* FindWAD(std::string textureName);
+
+          std::vector<WAD> m_wads;
+     };
 
 } // namespace WAD

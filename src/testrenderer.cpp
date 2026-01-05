@@ -18,6 +18,7 @@
 #include "camera.h"
 #include "shader.h"
 #include "texture.h"
+#include "wad.h"
 
 void TestRenderer::SetCamera(Camera *cam)
 {
@@ -86,16 +87,21 @@ void TestRenderer::Load() {
          1);
     //this->texture2->Load();
 
-    this->wad = std::make_unique<WAD::WAD>("textures/halflife.wad");
+    this->wadArchive = std::make_unique<WAD::WADArchive>(
+         std::vector<std::string>{
+              "textures/halflife.wad"
+         });
+
     //hlWad.LoadTexture("SUBWAY_FLOOR1");
     this->texture3 = std::make_unique<WADTexture>(
          "FIFTIES_WALL6B",
          //"FIFTIES_WALL6B",
-         wad.get(),
+         wadArchive.get(),
          "texture1",
          shader.get(),
          0
          );
+
     this->texture3->Load();
 }
 

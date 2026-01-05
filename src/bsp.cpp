@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "bsp.h"
+#include "wad.h"
 
 namespace BSP {
      BSP ParseBSPFile(std::ifstream file)
@@ -39,13 +40,15 @@ namespace BSP {
           map.textureOffsets = std::vector<uint32_t>(map.textureHeader.nMipTextures);
           file.read(reinterpret_cast<char*>(map.textureOffsets.data()), sizeof(uint32_t) * map.textureHeader.nMipTextures);
 
-          map.textures = std::vector<MipTex>(map.textureHeader.nMipTextures);
+          map.textures = std::vector<MipTex>();
+          map.textures.reserve(map.textureHeader.nMipTextures);
           for( const uint32_t& offset : map.textureOffsets )
           {
-               file.seekg(textureLumpHeader.nOffset + offset);
-               MipTex mipTex;
-               file.read(reinterpret_cast<char*>(&mipTex), sizeof(mipTex));
-               map.textures.emplace_back(mipTex);
+                file.seekg(textureLumpHeader.nOffset + offset);
+                MipTex mipTex;
+                file.read(reinterpret_cast<char*>(&mipTex), sizeof(mipTex));
+                WAD::NormalizeTextureName(mipTex.szName);
+                map.textures.emplace_back(mipTex);
           }
 
           if( LOG_TEXTURES )
@@ -62,7 +65,6 @@ namespace BSP {
                 std::cout << "read miptex offsets: " << mipTex.nOffsets[3] << "\n";
             }
           }
-          // TODO: Load texture data
 
           // Texture infos
           Lump textureInfoLump = map.header.lump[LUMP_TEXINFO];

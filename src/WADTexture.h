@@ -10,7 +10,7 @@
 class WADTexture : public Texture {
 public:
      WADTexture(std::string textureName,
-                WAD::WAD* wadArchive,
+                WAD::WADArchive* wadArchive,
                 std::string uniformname,
                 Shader* shader,
                 unsigned int texturenum);
@@ -24,5 +24,5 @@ private:
      std::string m_textureName;
 
      // The original archive.
-     WAD::WAD* m_wadArchive;
+     WAD::WADArchive* m_wadArchive;
 };

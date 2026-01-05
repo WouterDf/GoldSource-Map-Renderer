@@ -28,8 +28,10 @@ public:
 
 private :
     std::unique_ptr<Shader> shader;
-    std::unique_ptr<PNGTexture> texture1;
     std::unique_ptr<PNGTexture> texture2;
+    std::unique_ptr<WADTexture> texture1;
+    std::unique_ptr<WAD::WADArchive> m_wadArchive;
+    std::vector<WADTexture> textures;
     GLuint vao;
     GLuint vbo;
     GLuint ebo;
@@ -37,7 +39,5 @@ private :
     int nIndices;
     Camera* camera;
     BSP::BSP* map;
-    std::unique_ptr<WAD::WAD> wad;
     std::vector<BSPRenderBatch> renderBatches;
-    std::vector<WADTexture> textureArray;
 };

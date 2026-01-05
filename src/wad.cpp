@@ -1,24 +1,45 @@
 
 #include "wad.h"
 #include "assetloader.h"
+#include "bsp.h"
+#include <algorithm>
+#include <cctype>
 #include <cstdint>
+#include <cstring>
 #include <fstream>
+#include <ios>
 #include <iostream>
+#include <stdexcept>
 #include <sys/_types/_u_int16_t.h>
 
 namespace WAD {
-     WAD::WAD(std::string filename)
-     {
-          this->m_filename = filename;
-          this->m_info = ParseWADFile(AssetLoader::ReadWAD(filename));
-     }
+    WAD::WAD(std::string filename)
+    {
+        this->m_filename = filename;
+        this->m_info = ParseWADFile(AssetLoader::ReadWAD(filename));
+    }
 
-     
+    /**
+    * Texture names can start with a prefix (NAME -> +0NAME or NAME -> -5NAME). These
+    * prefixes conflict when the renderer does texture lookups.
+    */
+    void NormalizeTextureName(char* name)
+    {
+        std::string stdName = name;
+        if( stdName.size() > 2 && (stdName[0] == '+' || stdName[0] == '-' ) && std::isdigit(stdName[1]) )
+        {
+             stdName = stdName.substr(2); 
+        }
+        std::transform( stdName.begin(), stdName.end(), stdName.begin(), ::toupper );
+        std::strncpy(name, stdName.c_str(), MAXTEXTURENAME - 1);
+        name[MAXTEXTURENAME - 1] = '\0';
+    }
 
      WADInfo WAD::ParseWADFile(std::ifstream file)
     {
          const bool LOG_INFO_HEADER = false;
          const bool LOG_DIR_ENTRIES = false;
+         const bool LOG_DIR_ENTRY_NAMES = false;
 
          WADInfo wad{};
 
@@ -41,9 +62,10 @@ namespace WAD {
          file.seekg(infoHeader.infotableofs);
          for( int i = 0; i < infoHeader.numlumps; i++ )
          {
-              DirEntry entry{};
-              file.read(reinterpret_cast<char*>(&entry), sizeof(entry));
-              wad.dirEntries.push_back(entry);
+                DirEntry entry{};
+                file.read(reinterpret_cast<char*>(&entry), sizeof(entry));
+                NormalizeTextureName(entry.szName);
+                wad.dirEntries.push_back(entry);
          }
 
          if( LOG_DIR_ENTRIES )
@@ -54,6 +76,14 @@ namespace WAD {
                    std::cout << "offset: " << entry.nFilePos << "\n";
                    std::cout << "disk size: " << entry.nDiskSize << "\n";
                    std::cout << "uncompressed size: " << entry.nDiskSize << "\n";
+              }
+         }
+
+        if( LOG_DIR_ENTRY_NAMES )
+         {
+              for( const auto& entry: wad.dirEntries )
+              {
+                   std::cout << "Texture name: " << entry.szName << "\n";
               }
          }
          return wad;
@@ -173,5 +203,53 @@ namespace WAD {
          *height = tex.height;
          return rgba;
     }
+
+     WADArchive::WADArchive(std::vector<std::string> filesnames) {
+          for( const auto& filename : filesnames )
+          {
+               this->m_wads.push_back(WAD{filename});
+          }
+     }
+
+    // Check if WAD-file contains a texture by name
+     bool WADArchive::Contains(std::string textureName)
+     {
+          const auto& found = std::find_if(
+               this->m_wads.begin(),
+               this->m_wads.end(),
+               [textureName](WAD wad) {
+                    return wad.Contains(textureName);
+                });
+
+          return found != this->m_wads.end();
+     }
+
+    // Load raw texture data
+    std::vector<uint8_t> WADArchive::LoadTexture(
+          std::string textureName,
+          unsigned int* width,
+          unsigned int* height)
+    {
+        WAD* wad = FindWAD(textureName);
+        return wad->LoadTexture(textureName, width, height);
+    }
+
+    WAD* WADArchive::FindWAD(std::string textureName)
+    {
+        if( !this->Contains(textureName) )
+        {
+            throw std::runtime_error("Tried to load a texture that is not available.");
+        }
+
+        const auto found = std::find_if(
+               this->m_wads.begin(),
+               this->m_wads.end(),
+               [textureName](WAD wad) {
+                    return wad.Contains(textureName);
+                });
+
+        return &*found;
+    }
+
 
 } // namespace WAD

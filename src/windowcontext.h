@@ -23,7 +23,7 @@ public:
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
         window = SDL_CreateWindow(
-            "OpenGL Window",
+            "GoldSource Map Renderer",
             800,
             600,
             SDL_WINDOW_OPENGL

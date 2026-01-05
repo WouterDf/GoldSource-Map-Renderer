@@ -26,11 +26,11 @@ private :
      std::unique_ptr<PNGTexture> texture1;
      std::unique_ptr<PNGTexture> texture2;
      std::unique_ptr<WADTexture> texture3;
+     std::unique_ptr<WAD::WADArchive> wadArchive;
      GLuint vao;
      GLuint vbo;
      GLuint ebo;
      GLuint texture;
      int nIndices;
      Camera* camera;
-     std::unique_ptr<WAD::WAD> wad;
 };

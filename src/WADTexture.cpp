@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <iostream>
 
-WADTexture::WADTexture(std::string textureName, WAD::WAD *wadArchive,
+WADTexture::WADTexture(std::string textureName, WAD::WADArchive *wadArchive,
                        std::string uniformname, Shader *shader,
                        unsigned int texturenum)
     : Texture(uniformname, shader, texturenum), m_textureName(textureName),

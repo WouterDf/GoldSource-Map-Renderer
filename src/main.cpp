@@ -42,11 +42,11 @@ void UpdateCamera(Camera* camera, float deltaTime)
     const bool* keyStates = SDL_GetKeyboardState(nullptr);
     if( keyStates[SDL_SCANCODE_W] )
     {
-        camMove -= glm::vec3(0, 0, 1);
+        camMove += glm::vec3(0, 0, 1);
     }
     if( keyStates[SDL_SCANCODE_S] )
     {
-        camMove += glm::vec3(0, 0, 1);
+        camMove -= glm::vec3(0, 0, 1);
     }
     if( keyStates[SDL_SCANCODE_A] )
     {
@@ -75,7 +75,7 @@ void UpdateCamera(Camera* camera, float deltaTime)
 int main()
 {
     std::cout << "Starting application. \n";
-    BSP::BSP map = AssetLoader::ReadBSP("maps/de_dust2.bsp");
+    BSP::BSP map = AssetLoader::ReadBSP("maps/de_dust.bsp");
 
     WindowContext windowContext{};
     auto camera = Camera{glm::vec3(0.0f, 0.0f, 1500.0f), glm::vec3(.0f, .0f, -1.0f)};
