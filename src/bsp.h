@@ -2,7 +2,9 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <glm/ext/vector_float3.hpp>
 #include <vector>
+#include <glm/vec2.hpp>
 
 namespace BSP {
 
@@ -79,19 +81,25 @@ namespace BSP {
      public:
           explicit BSP(std::filesystem::path relativePath);
           std::vector<Face> GetFaces() const { return faces; };
-          std::vector<Textureinfo> GetTextureinfos() const { return textureInfos; };
+          std::vector<Textureinfo> GetTextureinfos() const { return texInfo; };
           std::vector<MipTex> GetTextures() const { return textures; };
           std::vector<Edge> GetEdges() const { return edges; };
 
           // Get all vertices for face
-          std::vector<ValveVector3d> GetVertices(const Face& face) const;
+          std::vector<glm::vec3> GetVertices(const Face& face) const;
+
+          glm::vec2 GetTextureCoords(glm::vec3 vertexPosition, Face face) const;
+
+          glm::vec2 GetLightmapCoords(glm::vec3 vertexPosition, Face face) const;
+
+          glm::vec2 GetNonNormalizedTextureCoords(glm::vec3 vertexPosition, Face face) const;
 
      private:
           Header header;
           char* entities;
           TextureHeader textureHeader;
           std::vector<uint32_t> textureOffsets;
-          std::vector<Textureinfo> textureInfos;
+          std::vector<Textureinfo> texInfo;
           std::vector<MipTex> textures;
           std::vector<ValveVector3d> vertices;
           std::vector<Face> faces;

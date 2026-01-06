@@ -1,0 +1,165 @@
+* Lightmaps and lightmap coordinates
+from
+https://www.gamedev.net/forums/topic/538713-bspv38-quake-2-bsp-loader-lightmap-problem/#:~:text=Getting%20lightmap%20texture%20co%2Dordinates,HyperNewbie
+
+Anyway, from looking at other people's projects and randomly modifying
+random bits of bitsy code, I somehow managed to get the formula right.
+
+The formula for texture width and height are wrong, and the website
+has no mention of how lightmap texture coordinates are calculated.
+
+I'll post my findings here, just in case anyone comes across this page
+on google with the exact same problem I ran into:
+
+This info is for BSPv38, in other words Quake 2 BSP files, regarding
+lightmaps and loading and rendering them properly. I used openGL to do
+the rendering.
+
+Getting lightmap dimensions:
+
+Face structure gives the lightmap offset, but for some crazy reason,
+does not give the lightmap dimensions: you must calculate them
+yourself by going through every vertex, calculating their texture map
+U V co-ordinates and do stuff to them.
+
+So, first, you go through every vertex of the face, and calculate
+their UV co-ordinates (use the formulae on the website
+http://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml).
+
+u = x * u_axis.x + y * u_axis.y + z * u_axis.z + u_offset v = x *
+v_axis.x + y * v_axis.y + z * v_axis.z + v_offset
+
+Then, you get the results in two floats, u and v. FLOOR u and FLOOR v
+into two integers, floor_u and floor_v. Then, you check floor_u and
+floor_v against max_u and max_v and min_u and min_v (4 of them all
+integers), to get the maximum and minimum floor_u and floor_v
+variables seen so far. DO NOT GET MAXIMUM/MINIMUM u and v. We need
+maximum/minimum floor_u and floor_v.
+
+Then, you divide the min_u and max_u and min_v and max_v variables by
+16, in FLOAT. If you are using C++, this means you will need to
+specifically typecast those 4 ints into float before dividing by 16.
+
+Then, you floor the two min_ variables and ceil the two max_
+variables, get the difference between the two, add 1, and typecast the
+result back to an int.
+
+Here is my little bit of C++ code that does this step:
+
+_minU = (float)floor((float)(minU / 16.0));
+_maxU =(float)ceil((float)(maxU / 16.0));
+_minV = (float)floor((float)(minV /16.0));
+_maxV = (float)ceil((float)(maxV / 16.0));
+
+LIGHTMAPW =(int)(_maxU - _minU + 1);
+LIGHTMAPH = (int)(_maxV - _minV + 1);
+
+Getting lightmap texture co-ordinates: This will generate a texture
+co-ordinate that's in the range 0.0 to 1.0, for opengl glTexCoord2f
+usage.
+
+Let's say we need to get the texture co-ordinates for a vertex.
+
+we first calculate the u and v for the texture map, the formula given
+above.  Then, we get LIGHTMAPW and LIGHTMAPH , also given above We
+also need the minU and minV and maxU and maxV from above, the max/min
+floor_u and floor_v for all vertexes.
+
+Then, simply follow this formula:
+
+float MidPolyU = (minU + maxU) / 2.0; float MidPolyV = (minV + maxV) /
+2.0; float MidTexU = LIGHTMAPW / 2.0; float MidTexV = LIGHTMAPH / 2.0;
+float lightmap_u = MidTexU + (u - MidPolyU) / 16.0; float lightmap_v =
+MidTexV + (v - MidPolyV) / 16.0; glTexCoord2f(lightmap_u/LIGHTMAPW
+,lightmap_v/LIGHTMAPH );
+
+As you can see, we get the co-ordinates and make them relative to the
+middle of the texture. Or something like that.
+
+Hopefully this will solve the problems for people who are trying to
+load quake2's BSP files and get stuck at trying to load the lightmaps,
+because nowhere on the face of the internet is there such a
+documentation of this and quake 2 source code takes a while to
+excavate into.
+
+Check six, HyperNewbie
+
+
+
+I know the topic is too old.  But I want to make the answer clear for
+others, because I spent a lot of time determining the source of
+wierd/broken/rainbow lightmaps.  So here is how to read lightmaps from
+quake 2 bsp file.  The next code is a bit simplified and there is no
+lightmap baking into one single texture here.  Only per-face
+generation of lightmaps just to be clear of all texture
+coordinate/dimensions calculations.
+
+1. Just get all the data into memory:
+int lightmapDataLength = header.lump[LUMP_LIGHTMAPS].length; //
+/sizeof(unsigned char); unsigned char lightmapData = new unsigned
+char[lightmapDataLength]; fseek(file,
+header.lump[LUMP_LIGHTMAPS].offset, SEEK_SET); // LUMP_LIGHTMAPS is 7
+fread(lightmapData, sizeof(unsigned char), lightmapDataLength, file);
+Alternatively you can also seek for each lightmap while iterating
+through bsp faces. Current lightmap for current face would be located
+at header.lump[LUMP_LIGHTMAPS].offset + currentFace.lightmap_offset
+
+2. Yes, to get lightmap dimensions you must process all faces and get
+   those damn floored min/max of UVs.
+First of all you must init the face data like this: faces[f].fminUV.x
+= 999999; faces[f].fminUV.y = 999999; faces[f].fmaxUV.x = -99999;
+faces[f].fmaxUV.y = -99999; Then, you calculate the texture
+coordinates exactly like it's written on all q2bsp specs:
+faces[f].texcoords[i*2 + j].x = verts[idx].x * texinfo->u_axis.x +
+verts[idx].y * texinfo->u_axis.y + verts[idx].z * texinfo->u_axis.z +
+texinfo->u_offset; faces[f].texcoords[i*2 + j].y = verts[idx].x *
+texinfo->v_axis.x + verts[idx].y * texinfo->v_axis.y + verts[idx].z *
+texinfo->v_axis.z + texinfo->v_offset; And only after that you compute
+min/max values while iterating through faces:
+
+faces[f].fminUV.x = min(floor(faces[f].texcoords[i*2 + j].x),
+faces[f].fminUV.x); faces[f].fminUV.y =
+min(floor(faces[f].texcoords[i*2 + j].y), faces[f].fminUV.y);
+faces[f].fmaxUV.x = max(floor(faces[f].texcoords[i*2 + j].x),
+faces[f].fmaxUV.x); faces[f].fmaxUV.y =
+max(floor(faces[f].texcoords[i*2 + j].y), faces[f].fmaxUV.y);
+
+3. Now you're ready to get lightmap dimensions:
+int lightMapWidth = ceil(faces[f].fmaxUV.x/16) -
+floor(faces[f].fminUV.x/16) +1; int lightMapHeight =
+ceil(faces[f].fmaxUV.y/16) - floor(faces[f].fminUV.y/16) +1;
+
+4. Now the important part which is still never indicated by anybody,
+   with a little exceptions.
+First of all if you choose to offset into lightmap data array
+directly, like: unsigned char *lm_data =
+&lightmapData[face->lightmap_offset]; And then pass rgb data into
+opengl you MUST specify alignment!
+glPixelStorei(GL_PACK_ALIGNMENT,1);
+glPixelStorei(GL_UNPACK_ALIGNMENT,1); glTexImage2D(GL_TEXTURE_2D, 0,
+3, lightMapWidth, lightMapHeight, 0, GL_RGB, GL_UNSIGNED_BYTE,
+lm_data); Without this all the people get lightmaps which are
+diagonaly projected or a lot of rainbow colors.  This deceives most
+developers and they think like: damn the calculations are wrong, there
+is something wrong with pointers/data/uvs/etc BUT ITS THE DAMN
+ALIGNMENT (blame Carmack for all this shit!)  The alternative way to
+read the data is to read it as rgb and add fourth component with value
+255 and upload into rgba texture, like this: static unsigned char
+lm_data[32*32*4] = {0}; fseek(file,
+header.lump[LUMP_LIGHTMAPS].offset + face->lightmap_offset, SEEK_SET);
+for(int y = 0; y for(int x = 0; x unsigned char rgba[4]; fread(rgba,
+sizeof(unsigned char), 3, file); // read rgb rgba[3] = 255; // set the
+4th component to 255 memcpy(&lm_data[x*4+(y*4)*lightMapWidth], rgba,
+sizeof(unsigned char)*4); // write as rgba } }
+glTexImage2D(GL_TEXTURE_2D, 0, 4, lightMapWidth, lightMapHeight, 0,
+GL_RGBA, GL_UNSIGNED_BYTE, lm_data); And don't forget the clamping:
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+5. Rendering (resulting texture coordinates generation):
+u = face->texcoords[j].x; v = face->texcoords[j].y; u -=
+face->fminUV.x; v -= face->fminUV.y; u /= (face->fmaxUV.x -
+face->fminUV.x); v /= (face->fmaxUV.y - face->fminUV.y);
+glTexCoord2f(u, v); glVertex3fv(&face->vertices[j].x);
+
+The result... well not totally but almost identical.

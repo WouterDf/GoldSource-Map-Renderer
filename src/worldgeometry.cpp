@@ -32,23 +32,20 @@ void WorldGeometry::Load(const BSP::BSP& bsp)
           std::vector<uint32_t> faceIndexBuffer{};
 
           // Add vertices to the VBO
-          for( const auto& vertex : bsp.GetVertices(face) )
+          for( const auto& vertexPosition : bsp.GetVertices(face) )
           {
                // Position
-               faceVertexBuffer.push_back( vertex.x );
-               faceVertexBuffer.push_back( vertex.z );
-               faceVertexBuffer.push_back( -vertex.y );
+               faceVertexBuffer.push_back( vertexPosition.x );
+               faceVertexBuffer.push_back( vertexPosition.z );
+               faceVertexBuffer.push_back( -vertexPosition.y );
 
-               // UV Coordinates
-               auto glmPos = glm::vec3(vertex.x, vertex.y, vertex.z);
-               auto glmS = glm::vec3(textureInfo.vS.x, textureInfo.vS.y, textureInfo.vS.z);
-               auto glmT = glm::vec3(textureInfo.vT.x, textureInfo.vT.y, textureInfo.vT.z);
+               auto vecUV = bsp.GetTextureCoords(vertexPosition, face);
+               faceVertexBuffer.push_back( vecUV.x );
+               faceVertexBuffer.push_back( vecUV.y );
 
-               float u = (glm::dot(glmPos, glmS) + textureInfo.fSShift) / textureMip.nWidth;
-               float v = (glm::dot(glmPos, glmT) + textureInfo.fTShift) / textureMip.nHeight;
-
-               faceVertexBuffer.push_back(u);
-               faceVertexBuffer.push_back(v);
+               auto vecLightmap = bsp.GetLightmapCoords(vertexPosition, face);
+               faceVertexBuffer.push_back( vecLightmap.x );
+               faceVertexBuffer.push_back( vecLightmap.y );
           }
 
           // Triangulate using triangle fan (v0, v1, v2), (v0, v2, v3), etc.

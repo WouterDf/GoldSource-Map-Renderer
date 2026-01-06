@@ -40,7 +40,7 @@ std::vector<BSPDrawCall> BSPRenderer::RegisterDrawCalls(
           std::vector<std::vector<uint32_t>> localIndexBuffers,
           std::vector<std::string> textureNames)
 {
-     constexpr uint8_t ATTRIBUTES_PER_VERTEX = 5;
+     constexpr uint8_t ATTRIBUTES_PER_VERTEX = 7;
 
      std::vector<float> globalVertexBuffer;
      std::vector<uint32_t> globalIndexBuffer;
@@ -152,11 +152,14 @@ void BSPRenderer::Commit(std::vector<float> vertexBuffer,
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     // Attrib Position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // Attrib UV
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 7*sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    // Attrib Lightmap Coordinats
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7*sizeof(float), (void*)(5 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glGenBuffers(1, &ebo);
 

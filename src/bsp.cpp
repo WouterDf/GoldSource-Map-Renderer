@@ -1,5 +1,8 @@
+#include <algorithm>
 #include <cstdint>
 #include <fstream>
+#include <glm/ext/vector_float3.hpp>
+#include <glm/geometric.hpp>
 #include <iostream>
 #include <vector>
 
@@ -74,20 +77,20 @@ namespace BSP {
           Lump textureInfoLump = this->header.lump[LUMP_TEXINFO];
           int numTextureInfos = textureInfoLump.nLength / sizeof( Textureinfo );
           file.seekg( textureInfoLump.nOffset );
-          this->textureInfos = std::vector<Textureinfo>{};
-          this->textureInfos.reserve( numTextureInfos );
+          this->texInfo = std::vector<Textureinfo>{};
+          this->texInfo.reserve( numTextureInfos );
           for( int i = 0; i < numTextureInfos; i++ )
           {
                Textureinfo texinfo{};
                file.read(reinterpret_cast<char*>(&texinfo), sizeof(texinfo));
-               this->textureInfos.push_back(texinfo);
+               this->texInfo.push_back(texinfo);
           }
 
           if( LOG_TEXINFO )
           {
                std::cout << "Number of texture-info-structs: " << numTextureInfos << "\n";
 
-               for( const auto& texinfo : this->textureInfos )
+               for( const auto& texinfo : this->texInfo )
                {
                     std::cout << "Texinfo vS: " << texinfo.vS.x << " " << texinfo.vS.y << " " << texinfo.vS.z << "\n";
                     std::cout << "Texinfo vT: " << texinfo.vT.x << " " << texinfo.vT.y << " " << texinfo.vT.z << "\n";
@@ -190,7 +193,7 @@ namespace BSP {
           std::cout << "Size of map: " << sizeof(this) << "\n";
     }
 
-     std::vector<ValveVector3d> BSP::GetVertices(const Face& face) const
+     std::vector<glm::vec3> BSP::GetVertices(const Face& face) const
      {
           std::vector<uint32_t> vertexIndices;
           for ( int i = 0; i < face.nEdges; i++ )
@@ -207,12 +210,89 @@ namespace BSP {
                 }
           }
 
-          std::vector<ValveVector3d> vertices{};
+          std::vector<glm::vec3> vertices{};
           for( const auto& index : vertexIndices )
           {
-               vertices.push_back( this->vertices[index] );
+               auto vertex = this->vertices[index];
+               vertices.push_back( glm::vec3(vertex.x, vertex.y, vertex.z) );
           };
 
           return vertices;
     }
+
+     glm::vec2 BSP::GetTextureCoords(glm::vec3 vertexPosition, Face face) const
+    {
+         Textureinfo hTexInfo = texInfo[face.iTextureInfo];
+         MipTex mip = textures[hTexInfo.iMiptex];
+         auto nonnormalTexCoords = GetNonNormalizedTextureCoords(vertexPosition, face);
+         return {
+            nonnormalTexCoords.x / mip.nWidth,
+            nonnormalTexCoords.y / mip.nHeight
+         };
+    }
+
+     glm::vec2 BSP::GetNonNormalizedTextureCoords(glm::vec3 vertexPosition, Face face) const
+    {
+        Textureinfo hTexInfo = texInfo[face.iTextureInfo];
+        MipTex mip = textures[hTexInfo.iMiptex];
+
+        auto vecS = glm::vec3(hTexInfo.vS.x, hTexInfo.vS.y, hTexInfo.vS.z);
+        auto vecT = glm::vec3(hTexInfo.vT.x, hTexInfo.vT.y, hTexInfo.vT.z);
+
+        auto uCoord = (glm::dot(vertexPosition, vecS) + hTexInfo.fSShift);
+        auto vCoord = (glm::dot(vertexPosition, vecT) + hTexInfo.fTShift);
+
+        return {uCoord, vCoord};
+    }
+
+     /**
+      * Lightmaps are structured in an undocumented manner in
+      * GoldSrc/Quake. Sources for computing lightmaps are in
+      * `docs/lightmaps.org`.
+      */
+     glm::vec2 BSP::GetLightmapCoords(glm::vec3 vertexPosition, Face face) const
+     {
+          // Step 1: Calculate lightmap dimensions
+          std::vector<float> Uvalues;
+          std::vector<float> Vvalues;
+
+          for( const auto& vertexPos: GetVertices(face) )
+          {
+               auto uvs = GetNonNormalizedTextureCoords(vertexPos, face);
+               Uvalues.push_back(uvs.x);
+               Vvalues.push_back(uvs.y);
+          }
+
+          float minU = *std::min_element(Uvalues.begin(), Uvalues.end());
+          float maxU = *std::max_element(Uvalues.begin(), Uvalues.end());
+          float minV = *std::min_element(Vvalues.begin(), Vvalues.end());
+          float maxV = *std::max_element(Vvalues.begin(), Vvalues.end());
+
+          constexpr float DIM = 16.0F;
+          float _minU = floor((minU / DIM));
+          float _maxU = ceil(( maxU / DIM));
+          float _minV = floor((minV / DIM));
+          float _maxV = ceil(( maxV / DIM));
+
+          uint32_t lightmapWidth  = (uint32_t)(_maxU - _minU + 1);
+          uint32_t lightmapHeight = (uint32_t)(_maxV - _minV + 1);
+
+          // Step 2: Calculate lightmap coordinates
+          auto uvVec = GetNonNormalizedTextureCoords(vertexPosition, face);
+
+          float MidPolyU = (minU + maxU) / 2.0;
+          float MidPolyV = (minV + maxV) / 2.0;
+          float MidTexU = lightmapWidth / 2.0;
+          float MidTexV = lightmapHeight / 2.0;
+          float lightmap_u = MidTexU + (uvVec.x - MidPolyU) / DIM;
+          float lightmap_v = MidTexV + (uvVec.y - MidPolyV) / DIM;
+
+          auto lightmapCoords = glm::vec2{
+               lightmap_u / lightmapWidth,
+               lightmap_v / lightmapHeight
+          };
+          
+          return lightmapCoords;
+     }
+
 } // namespace BSP
