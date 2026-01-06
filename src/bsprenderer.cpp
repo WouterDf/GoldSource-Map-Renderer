@@ -23,7 +23,6 @@
 #include <vector>
 
 #include "WADTexture.h"
-#include "bsp.h"
 #include "bsprenderbatch.h"
 #include "camera.h"
 #include "pngtexture.h"
@@ -36,12 +35,71 @@ void BSPRenderer::SetCamera(Camera *cam)
      camera = cam;
 }
 
-void BSPRenderer::SetMap(BSP::BSP *map) {
-     this->map = map;
+std::vector<BSPDrawCall> BSPRenderer::RegisterDrawCalls(
+          std::vector<std::vector<float>> localVertexBuffers,
+          std::vector<std::vector<uint32_t>> localIndexBuffers,
+          std::vector<std::string> textureNames)
+{
+     constexpr uint8_t ATTRIBUTES_PER_VERTEX = 5;
+
+     std::vector<float> globalVertexBuffer;
+     std::vector<uint32_t> globalIndexBuffer;
+     std::vector<std::string> globalTextureNames;
+     
+     std::vector<BSPDrawCall> drawCalls;
+     uint32_t numFaces = localVertexBuffers.size();
+
+     for( int faceId = 0; faceId < numFaces ; faceId++)
+     {
+          uint32_t prevIndexBufferSize = globalIndexBuffer.size();
+          uint32_t prevVertexBufferSize = globalVertexBuffer.size();
+
+          for( const auto& vertex: localVertexBuffers[faceId] )
+          {
+                globalVertexBuffer.push_back(vertex);
+          }
+
+          for( const auto& index: localIndexBuffers[faceId] )
+          {
+            globalIndexBuffer.push_back( index + prevVertexBufferSize / ATTRIBUTES_PER_VERTEX);
+          }
+
+          BSPDrawCall drawCall{};
+          drawCall.indexOffset = prevIndexBufferSize;
+          drawCall.indexLength = globalIndexBuffer.size() - prevIndexBufferSize;
+
+          auto textureName = textureNames[faceId];
+          auto textureHit = std::find(globalTextureNames.begin(),
+                                      globalTextureNames.end(),
+                                      textureName);
+          if( textureHit != globalTextureNames.end() )
+          {
+               drawCall.textureIndex = textureHit - globalTextureNames.begin();
+          } else {
+               drawCall.textureIndex = globalTextureNames.size();
+               globalTextureNames.push_back(textureName);
+          }
+
+          drawCalls.push_back(drawCall);
+     }
+
+     Commit(globalVertexBuffer, globalIndexBuffer, globalTextureNames);
+
+     return drawCalls;
 }
 
-void BSPRenderer::Load() {
-this->m_wadArchive = std::make_unique<WAD::WADArchive>(
+void BSPRenderer::Commit(std::vector<float> vertexBuffer,
+                         std::vector<uint32_t> indexBuffer,
+                         std::vector<std::string> textureNames)
+{
+    // Shaders
+    this->shader = std::make_unique<Shader>(
+         "shaders/bsp.vert",
+         "shaders/bsp.frag"
+         );
+
+    // load textures
+    this->m_wadArchive = std::make_unique<WAD::WADArchive>(
         std::vector<std::string>{
              "textures/halflife.wad",
              "textures/ajawad.wad",
@@ -73,164 +131,7 @@ this->m_wadArchive = std::make_unique<WAD::WADArchive>(
              "textures/tswad.wad",
          });
 
-     const uint8_t ATTRIBUTES_PER_VERTEX = 5;
-
-     std::vector<float> vertexBufferData{};
-     std::vector<uint32_t> elementBufferData{};
-     
-     // Cache of invalid textures
-     auto missingTextureCache = std::vector<std::string>{};
-     auto validTextureCache = std::vector<std::string>{};
-
-     // Populate the vertex and index buffers for the static level
-     // geometry, face per face.
-     for( const auto& face : map->GetFaces() )
-     {
-          BSP::Textureinfo textureInfo = map->GetTextureinfos()[face.iTextureInfo];
-          BSP::MipTex textureMip = map->GetTextures()[textureInfo.iMiptex];
-
-          if( textureInfo.nFlags == 0x01 )
-          {
-               // Flags texture as SPECIAL
-               // TODO: Draw or not based on texture name (sky, water, trigger, ..)
-               continue;
-          }
-
-          // Add textures
-          const auto missingTextureCacheHit = std::find(
-                missingTextureCache.begin(),
-                missingTextureCache.end(),
-                textureMip.szName);
-          const auto validTextureCacheHit = std::find(
-                validTextureCache.begin(),
-                validTextureCache.end(),
-                textureMip.szName);
-
-          // Index of this faces texture in textureArray
-          uint32_t textureIndex = 0;
-
-          // TODO: This is O(N), should be handled with map for O(1)
-          if( missingTextureCacheHit != missingTextureCache.end() )
-          {
-               // texture was previously detected as invalid;
-               continue; // dont draw this face
-          }
-          else if( validTextureCacheHit != validTextureCache.end() )
-          {
-               // texture was previously detected as valid
-               textureIndex = validTextureCacheHit - validTextureCache.begin();
-          }
-          else if( this->m_wadArchive->Contains(textureMip.szName) )
-          {
-               // texture found in WAD-file. It is valid.
-               validTextureCache.push_back(textureMip.szName);
-               textureIndex = validTextureCache.size() - 1;
-          } else {
-               // texture not found in WAD. It is invalid
-               missingTextureCache.push_back(textureMip.szName);
-               continue; // dont draw this face
-          }
-
-          // Local vertex buffer
-          std::vector<float> faceVertexBuffer{};
-          // Local index buffer
-          std::vector<uint32_t> faceIndexBuffer{};
-
-          // Store all BSP Vertex indices for each face
-          std::vector<uint32_t> faceVertexBSPIndices{};
-
-
-          for ( int i = 0; i < face.nEdges; i++ )
-          {
-               int32_t surfedge = map->GetSurfEdges().at(face.iFirstEdge + i);
-               uint32_t vertexIndex;
-
-               if (surfedge >= 0)
-               {
-                    vertexIndex = map->GetEdges()[surfedge].iVertex[0];
-               } else
-               {
-                    vertexIndex = map->GetEdges()[-surfedge].iVertex[1];
-               }
-               faceVertexBSPIndices.push_back(vertexIndex);
-          }
-
-          // Add vertices to the VBO
-          for( const uint32_t& bspVertexIndex : faceVertexBSPIndices )
-          {
-
-               BSP::ValveVector3d vPos = map->GetVertices()[bspVertexIndex];
-               faceVertexBuffer.push_back( vPos.x );
-               faceVertexBuffer.push_back( vPos.z );
-               faceVertexBuffer.push_back( -vPos.y );
-               auto glmPos = glm::vec3(vPos.x, vPos.y, vPos.z);
-               auto glmS = glm::vec3(textureInfo.vS.x, textureInfo.vS.y, textureInfo.vS.z);
-               auto glmT = glm::vec3(textureInfo.vT.x, textureInfo.vT.y, textureInfo.vT.z);
-
-               float u = (glm::dot(glmPos, glmS) + textureInfo.fSShift) / textureMip.nWidth;
-               float v = (glm::dot(glmPos, glmT) + textureInfo.fTShift) / textureMip.nHeight;
-
-               faceVertexBuffer.push_back(u);
-               faceVertexBuffer.push_back(v);
-          }
-
-          // Triangulate using triangle fan (v0, v1, v2), (v0, v2, v3), etc.
-          // and add incides to local EBO.
-          for ( int i = 1; i < face.nEdges - 1; i++ )
-          {
-               faceIndexBuffer.push_back( 0 );     // First vertex
-               faceIndexBuffer.push_back( i );     // Current vertex
-               faceIndexBuffer.push_back( i + 1 ); // Next vertex
-          }
-
-          uint32_t prevElementBufferSize = elementBufferData.size();
-          uint32_t prevVertexBufferSize = vertexBufferData.size();
-
-          // Concat local buffers to global buffers.
-          for( const auto& vertex : faceVertexBuffer )
-          {
-               vertexBufferData.push_back(vertex);
-          }
-
-          for( const auto& index : faceIndexBuffer )
-          {
-               elementBufferData.push_back( index + prevVertexBufferSize / ATTRIBUTES_PER_VERTEX);
-          }
-
-          // Create RenderBatch for face
-          BSPRenderBatch renderBatch{};
-          renderBatch.indexOffset = prevElementBufferSize;
-          renderBatch.indexLength = elementBufferData.size() - prevElementBufferSize;
-          renderBatch.textureIndex = textureIndex;
-          this->renderBatches.push_back(renderBatch);
-     };
-
-     std::cout << "Number of valid textures: " << validTextureCache.size() << "\n";
-     std::cout << "Number of missing textures: " << missingTextureCache.size() << "\n";
-     for( const auto& textureName : missingTextureCache )
-     {
-          std::cout << textureName << "\n";
-     }
-
-    // Shaders
-    this->shader = std::make_unique<Shader>(
-         "shaders/bsp.vert",
-         "shaders/bsp.frag"
-         );
-
-        // Test texture
-    texture1 = std::make_unique<WADTexture>(
-         "FIFTIES_WALL6B",
-         m_wadArchive.get(),
-         "texture1",
-         shader.get(),
-         0
-         );
-
-    texture1->Load();
-
-    // load textures
-    for( const auto& textureName : validTextureCache )
+    for( const auto& textureName : textureNames )
     {
          WADTexture texture{
             textureName,
@@ -261,13 +162,13 @@ this->m_wadArchive = std::make_unique<WAD::WADArchive>(
 
     // Push buffer data of BSP
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertexBufferData.size() * sizeof(float), vertexBufferData.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(float), vertexBuffer.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBufferData.size() * sizeof(uint32_t), elementBufferData.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.size() * sizeof(uint32_t), indexBuffer.data(), GL_STATIC_DRAW);
 }
 
-void BSPRenderer::DrawFrame(float deltaTime) {
+void BSPRenderer::ClearFrame() {
     glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);  
@@ -280,16 +181,14 @@ void BSPRenderer::DrawFrame(float deltaTime) {
     shader->BindUniform4f("model", glm::value_ptr(model));
     shader->BindUniform4f("view", glm::value_ptr(view));
     shader->BindUniform4f("projection", glm::value_ptr(projection));
+}
 
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+void BSPRenderer::DrawFrame(BSPDrawCall drawCall) {
+    this->textures[drawCall.textureIndex].Use();
 
-    for( const auto& renderBatch : this->renderBatches )
-    {
-        this->textures[renderBatch.textureIndex].Use();
+    glDrawElements(GL_TRIANGLES,
+                    drawCall.indexLength,
+                    GL_UNSIGNED_INT,
+                    (void*)(drawCall.indexOffset*sizeof(unsigned int)));
 
-        glDrawElements(GL_TRIANGLES,
-                       renderBatch.indexLength,
-                       GL_UNSIGNED_INT,
-                       (void*)(renderBatch.indexOffset*sizeof(unsigned int)));
-    }
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <fstream>
+#include <filesystem>
 #include <vector>
 
 namespace BSP {
@@ -78,12 +78,13 @@ namespace BSP {
      class BSP {
      public:
           explicit BSP(std::filesystem::path relativePath);
-          std::vector<Face> GetFaces() { return faces; };
-          std::vector<Textureinfo> GetTextureinfos() { return textureInfos; };
-          std::vector<MipTex> GetTextures() { return textures; };
-          std::vector<Edge> GetEdges() { return edges; };
-          std::vector<int32_t> GetSurfEdges() { return surfEdges; };
-          std::vector<ValveVector3d> GetVertices() { return vertices; };
+          std::vector<Face> GetFaces() const { return faces; };
+          std::vector<Textureinfo> GetTextureinfos() const { return textureInfos; };
+          std::vector<MipTex> GetTextures() const { return textures; };
+          std::vector<Edge> GetEdges() const { return edges; };
+
+          // Get all vertices for face
+          std::vector<ValveVector3d> GetVertices(const Face& face) const;
 
      private:
           Header header;

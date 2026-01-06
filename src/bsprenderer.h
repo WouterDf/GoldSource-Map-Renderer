@@ -9,27 +9,29 @@
 #include "WADTexture.h"
 #include "bsprenderbatch.h"
 #include "camera.h"
-#include "renderer.h"
 #include "shader.h"
 #include "pngtexture.h"
 #include "wad.h"
 
-namespace BSP {
-class BSP;
-} // namespace BSP
-
-
-class BSPRenderer : public Renderer {
+class BSPRenderer {
 public:
-    void Load() override;
-    void DrawFrame(float deltaTime) override;
-    void SetCamera(Camera* cam) override;
-    void SetMap(BSP::BSP* map);
+     void DrawFrame(BSPDrawCall drawCall);
+
+     void ClearFrame();
+
+     void SetCamera(Camera* cam);
+
+     std::vector<BSPDrawCall> RegisterDrawCalls(
+          std::vector<std::vector<float>> localVertexBuffer,
+          std::vector<std::vector<uint32_t>> localIndexBuffer,
+          std::vector<std::string> textureName);
 
 private :
+    void Commit(std::vector<float> vertexBuffer,
+                std::vector<uint32_t> indexBuffer,
+                std::vector<std::string> textureNames);
+
     std::unique_ptr<Shader> shader;
-    std::unique_ptr<PNGTexture> texture2;
-    std::unique_ptr<WADTexture> texture1;
     std::unique_ptr<WAD::WADArchive> m_wadArchive;
     std::vector<WADTexture> textures;
     GLuint vao;
@@ -38,6 +40,4 @@ private :
     GLuint texture;
     int nIndices;
     Camera* camera;
-    BSP::BSP* map;
-    std::vector<BSPRenderBatch> renderBatches;
 };

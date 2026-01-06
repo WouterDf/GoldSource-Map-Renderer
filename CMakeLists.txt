@@ -12,9 +12,6 @@ add_executable(wouteropengl
     src/windowcontext.h
     src/shader.h
     src/shader.cpp
-    src/renderer.h
-    src/testrenderer.h
-    src/testrenderer.cpp
     src/bsprenderer.cpp
     src/bsprenderer.h
     src/bsprenderbatch.h
@@ -25,6 +22,8 @@ add_executable(wouteropengl
     src/pngtexture.cpp
     src/wadtexture.cpp
     src/wadtexture.h
+    src/worldgeometry.h
+    src/worldgeometry.cpp
     src/camera.cpp
     src/camera.h
     src/bsp.h

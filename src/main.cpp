@@ -1,9 +1,9 @@
 #include "bsp.h"
 #include "bsprenderer.h"
 #include "camera.h"
-#include "testrenderer.h"
 #include "windowcontext.h"
 #include "SDL3/SDL_events.h"
+#include "worldgeometry.h"
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_timer.h>
 #include <iostream>
@@ -80,14 +80,11 @@ int main()
     WindowContext windowContext{};
     auto camera = Camera{glm::vec3(0.0f, 0.0f, 1500.0f), glm::vec3(.0f, .0f, -1.0f)};
 
-    TestRenderer testrenderer{};
-    testrenderer.SetCamera(&camera);
-    testrenderer.Load();
-
     BSPRenderer bsprenderer{};
     bsprenderer.SetCamera(&camera);
-    bsprenderer.SetMap(map.get());
-    bsprenderer.Load();
+
+    auto worldGeometry = std::make_unique<WorldGeometry>(&bsprenderer);
+    worldGeometry->Load(*map);
 
     bool done = false;
 
@@ -115,7 +112,9 @@ int main()
         UpdateCamera(&camera, frameTime.deltaTime);
 
         //testrenderer.DrawFrame(frameTime.deltaTime);
-        bsprenderer.DrawFrame(frameTime.deltaTime);
+        //bsprenderer.DrawFrame(frameTime.deltaTime);
+        bsprenderer.ClearFrame();
+        worldGeometry->DrawFrame();
 
         // Show FPS
         frameCount++;

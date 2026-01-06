@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include "bsp.h"
 #include "wad.h"
@@ -187,5 +188,31 @@ namespace BSP {
           }
 
           std::cout << "Size of map: " << sizeof(this) << "\n";
+    }
+
+     std::vector<ValveVector3d> BSP::GetVertices(const Face& face) const
+     {
+          std::vector<uint32_t> vertexIndices;
+          for ( int i = 0; i < face.nEdges; i++ )
+          {
+               int32_t surfedge = this->surfEdges.at(face.iFirstEdge + i);
+               uint32_t vertexIndex;
+
+                if (surfedge >= 0)
+                {
+                     vertexIndices.push_back(this->edges[surfedge].iVertex[0]);
+                } else
+                {
+                     vertexIndices.push_back(this->edges[-surfedge].iVertex[1]);
+                }
+          }
+
+          std::vector<ValveVector3d> vertices{};
+          for( const auto& index : vertexIndices )
+          {
+               vertices.push_back( this->vertices[index] );
+          };
+
+          return vertices;
     }
 } // namespace BSP
