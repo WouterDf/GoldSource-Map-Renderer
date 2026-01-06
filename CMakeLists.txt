@@ -22,6 +22,8 @@ add_executable(wouteropengl
     src/pngtexture.cpp
     src/wadtexture.cpp
     src/wadtexture.h
+    src/lightmaptexture.h
+    src/lightmaptexture.cpp
     src/worldgeometry.h
     src/worldgeometry.cpp
     src/camera.cpp

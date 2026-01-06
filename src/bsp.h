@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lightmaptexture.h"
 #include <cstdint>
 #include <filesystem>
 #include <glm/ext/vector_float3.hpp>
@@ -75,6 +76,15 @@ namespace BSP {
           uint16_t iVertex[2];
      };
 
+     struct LightMapDimensions {
+          float minU;
+          float maxU;
+          float minV;
+          float maxV;
+          uint32_t width;
+          uint32_t height;
+     };
+
      // End of BSP Internals
 
      class BSP {
@@ -94,6 +104,8 @@ namespace BSP {
 
           glm::vec2 GetNonNormalizedTextureCoords(glm::vec3 vertexPosition, Face face) const;
 
+          std::vector<LightMapData> GetLightMaps() const { return m_lightMapData; };
+
      private:
           Header header;
           char* entities;
@@ -105,8 +117,10 @@ namespace BSP {
           std::vector<Face> faces;
           std::vector<Edge> edges;
           std::vector<int32_t> surfEdges;
-     };
+          std::vector<LightMapData> m_lightMapData;
 
+          LightMapDimensions GetLightmapDimensions(Face face) const;
+     };
 
 } // namespace BSP
 

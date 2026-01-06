@@ -7,6 +7,8 @@ Camera::Camera(glm::vec3 position, glm::vec3 forward)
        m_forward( forward )
 {}
 
+
+
 void Camera::Move(glm::vec3 direction, float deltaTime)
 {
      //m_position += m_moveSpeed * deltaTime * direction;

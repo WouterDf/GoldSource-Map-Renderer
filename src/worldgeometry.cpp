@@ -1,6 +1,7 @@
 #include "worldgeometry.h"
 #include "bsp.h"
 #include "bsprenderbatch.h"
+#include "lightmaptexture.h"
 
 WorldGeometry::WorldGeometry(BSPRenderer *renderer)
      : m_renderer( renderer )
@@ -9,15 +10,18 @@ WorldGeometry::WorldGeometry(BSPRenderer *renderer)
 // Register BSP geometry to renderer and create RenderBatches
 void WorldGeometry::Load(const BSP::BSP& bsp)
 {
-     const uint8_t ATTRIBUTES_PER_VERTEX = 5;
+     const uint8_t ATTRIBUTES_PER_VERTEX = 7;
      std::vector<std::vector<float>> localVertexBuffer{};
      std::vector<std::vector<uint32_t>> localIndexBuffer{};
      std::vector<std::string> textureNames;
+     std::vector<LightMapData> lightMaps;
 
     // Populate the vertex and index buffers for the static level
      // geometry, face per face.
-     for( const auto& face : bsp.GetFaces() )
+     const auto& bspFaces = bsp.GetFaces();
+     for( int faceIndex = 0; faceIndex < bspFaces.size(); faceIndex++ )
      {
+          const auto& face = bspFaces[faceIndex];
           BSP::Textureinfo textureInfo = bsp.GetTextureinfos()[face.iTextureInfo];
           BSP::MipTex textureMip = bsp.GetTextures()[textureInfo.iMiptex];
 
@@ -60,13 +64,15 @@ void WorldGeometry::Load(const BSP::BSP& bsp)
           localVertexBuffer.push_back(faceVertexBuffer);
           localIndexBuffer.push_back(faceIndexBuffer);
           textureNames.push_back(textureMip.szName);
+          lightMaps.push_back(bsp.GetLightMaps()[faceIndex]);
         };
 
 
         std::vector<BSPDrawCall> drawCalls = this->m_renderer->RegisterDrawCalls(
                localVertexBuffer,
                localIndexBuffer,
-               textureNames);
+               textureNames,
+               lightMaps);
 
         this->m_drawCalls = drawCalls;
 }

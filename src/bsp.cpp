@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "bsp.h"
+#include "lightmaptexture.h"
 #include "wad.h"
 #include "assetloader.h"
 
@@ -20,6 +21,7 @@ namespace BSP {
           const bool LOG_EDGES = false;
           const bool LOG_SURFEDGES = false;
           const bool LOG_TEXINFO = false;
+          const bool LOG_LIGHTMAP = true;
 
           std::ifstream file = AssetLoader::ReadFile(relativePath);
 
@@ -191,6 +193,49 @@ namespace BSP {
           }
 
           std::cout << "Size of map: " << sizeof(this) << "\n";
+
+          // LIGHTMAPS
+          Lump lightMapLump = this->header.lump[LUMP_LIGHTING];
+          uint32_t lumpLightMapOffset = lightMapLump.nOffset;
+          for( const auto& face : faces )
+          {
+
+               LightMapData lightMap{
+                    .width = 0,
+                    .height = 0,
+               };
+
+               if( face.nLightmapOffset == -1 )
+               {
+                    //std::cout << "Face has no lightmap data \n";
+                    this->m_lightMapData.push_back(lightMap);
+                    continue;
+               }
+
+
+               uint32_t faceLightMapOffset = lumpLightMapOffset + face.nLightmapOffset;
+               LightMapDimensions dimensions = GetLightmapDimensions(face);
+               uint32_t faceLightMapSize = dimensions.width * dimensions.height * 3;
+
+               if( faceLightMapSize == 0 )
+               {
+                    //std::cout << "Face has no lightmap data \n";
+                    this->m_lightMapData.push_back(lightMap);
+                    continue;
+               }
+
+               lightMap.rgb.resize(faceLightMapSize);
+
+               file.seekg(faceLightMapOffset);
+               file.read(reinterpret_cast<char*>(lightMap.rgb.data()), faceLightMapSize);
+
+               lightMap.width = dimensions.width;
+               lightMap.height = dimensions.height;
+
+               this->m_lightMapData.push_back(lightMap);
+          }
+
+          
     }
 
      std::vector<glm::vec3> BSP::GetVertices(const Face& face) const
@@ -252,32 +297,17 @@ namespace BSP {
       */
      glm::vec2 BSP::GetLightmapCoords(glm::vec3 vertexPosition, Face face) const
      {
-          // Step 1: Calculate lightmap dimensions
-          std::vector<float> Uvalues;
-          std::vector<float> Vvalues;
-
-          for( const auto& vertexPos: GetVertices(face) )
-          {
-               auto uvs = GetNonNormalizedTextureCoords(vertexPos, face);
-               Uvalues.push_back(uvs.x);
-               Vvalues.push_back(uvs.y);
-          }
-
-          float minU = *std::min_element(Uvalues.begin(), Uvalues.end());
-          float maxU = *std::max_element(Uvalues.begin(), Uvalues.end());
-          float minV = *std::min_element(Vvalues.begin(), Vvalues.end());
-          float maxV = *std::max_element(Vvalues.begin(), Vvalues.end());
 
           constexpr float DIM = 16.0F;
-          float _minU = floor((minU / DIM));
-          float _maxU = ceil(( maxU / DIM));
-          float _minV = floor((minV / DIM));
-          float _maxV = ceil(( maxV / DIM));
 
-          uint32_t lightmapWidth  = (uint32_t)(_maxU - _minU + 1);
-          uint32_t lightmapHeight = (uint32_t)(_maxV - _minV + 1);
+          auto dimensions = GetLightmapDimensions(face);
+          auto minU = dimensions.minU;
+          auto maxU = dimensions.maxU;
+          auto minV = dimensions.minV;
+          auto maxV = dimensions.maxV;
+          auto lightmapWidth = dimensions.width;
+          auto lightmapHeight = dimensions.height; 
 
-          // Step 2: Calculate lightmap coordinates
           auto uvVec = GetNonNormalizedTextureCoords(vertexPosition, face);
 
           float MidPolyU = (minU + maxU) / 2.0;
@@ -294,5 +324,44 @@ namespace BSP {
           
           return lightmapCoords;
      }
+
+
+    LightMapDimensions BSP::GetLightmapDimensions(Face face) const
+    {
+          std::vector<float> flooredUvalues;
+          std::vector<float> flooredVvalues;
+
+          for( const auto& vertexPos: GetVertices(face) )
+          {
+               auto uvs = GetNonNormalizedTextureCoords(vertexPos, face);
+               flooredUvalues.push_back(floor(uvs.x));
+               flooredVvalues.push_back(floor(uvs.y));
+          }
+
+          float minU = *std::min_element(flooredUvalues.begin(), flooredUvalues.end());
+          float maxU = *std::max_element(flooredUvalues.begin(), flooredUvalues.end());
+          float minV = *std::min_element(flooredVvalues.begin(), flooredVvalues.end());
+          float maxV = *std::max_element(flooredVvalues.begin(), flooredVvalues.end());
+
+          constexpr float DIM = 16.0F;
+          float _minU = floor((minU / DIM));
+          float _maxU = ceil(( maxU / DIM));
+          float _minV = floor((minV / DIM));
+          float _maxV = ceil(( maxV / DIM));
+
+          uint32_t lightmapWidth  = (uint32_t)(_maxU - _minU + 1);
+          uint32_t lightmapHeight = (uint32_t)(_maxV - _minV + 1);
+
+          LightMapDimensions dimensions {
+               .width = lightmapWidth,
+               .height = lightmapHeight,
+               .minU = minU,
+               .maxU = maxU,
+               .minV = minV,
+               .maxV = maxV,
+          };
+
+          return dimensions;
+    }
 
 } // namespace BSP

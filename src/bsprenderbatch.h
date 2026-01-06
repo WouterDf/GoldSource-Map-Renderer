@@ -17,5 +17,8 @@ public:
 
      // index of texture in renderers textureArray
      uint32_t textureIndex;
+
+     // index of the lightmap in renderers lightMapArray
+     uint32_t lightMapIndex;
 };
 

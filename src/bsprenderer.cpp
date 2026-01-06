@@ -25,6 +25,7 @@
 #include "WADTexture.h"
 #include "bsprenderbatch.h"
 #include "camera.h"
+#include "lightmaptexture.h"
 #include "pngtexture.h"
 #include "shader.h"
 #include "texture.h"
@@ -38,7 +39,8 @@ void BSPRenderer::SetCamera(Camera *cam)
 std::vector<BSPDrawCall> BSPRenderer::RegisterDrawCalls(
           std::vector<std::vector<float>> localVertexBuffers,
           std::vector<std::vector<uint32_t>> localIndexBuffers,
-          std::vector<std::string> textureNames)
+          std::vector<std::string> textureNames,
+          std::vector<LightMapData> lightMapData)
 {
      constexpr uint8_t ATTRIBUTES_PER_VERTEX = 7;
 
@@ -80,17 +82,20 @@ std::vector<BSPDrawCall> BSPRenderer::RegisterDrawCalls(
                globalTextureNames.push_back(textureName);
           }
 
+          drawCall.lightMapIndex = faceId;
+
           drawCalls.push_back(drawCall);
      }
 
-     Commit(globalVertexBuffer, globalIndexBuffer, globalTextureNames);
+     Commit(globalVertexBuffer, globalIndexBuffer, globalTextureNames, lightMapData);
 
      return drawCalls;
 }
 
 void BSPRenderer::Commit(std::vector<float> vertexBuffer,
                          std::vector<uint32_t> indexBuffer,
-                         std::vector<std::string> textureNames)
+                         std::vector<std::string> textureNames,
+                         std::vector<LightMapData> lightMapData)
 {
     // Shaders
     this->shader = std::make_unique<Shader>(
@@ -144,6 +149,25 @@ void BSPRenderer::Commit(std::vector<float> vertexBuffer,
          this->textures.push_back(texture); 
     };
 
+    for( const auto& lightMap : lightMapData )
+    {
+         LightMapTexture texture{
+              "texture2",
+              shader.get(),
+              1,
+              lightMap
+         };
+
+         if( lightMap.width == 0)
+         {
+              texture.unused = true;
+         } else {
+            texture.Load();
+         }
+
+         this->lightMaps.push_back(texture);
+    }
+
     std::cout << "Loaded all textures into vram. Amount: " << this->textures.size() << "\n";
 
     // buffers
@@ -188,6 +212,7 @@ void BSPRenderer::ClearFrame() {
 
 void BSPRenderer::DrawFrame(BSPDrawCall drawCall) {
     this->textures[drawCall.textureIndex].Use();
+    this->lightMaps[drawCall.lightMapIndex].Use();
 
     glDrawElements(GL_TRIANGLES,
                     drawCall.indexLength,

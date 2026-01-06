@@ -9,6 +9,7 @@
 #include "WADTexture.h"
 #include "bsprenderbatch.h"
 #include "camera.h"
+#include "lightmaptexture.h"
 #include "shader.h"
 #include "pngtexture.h"
 #include "wad.h"
@@ -24,16 +25,19 @@ public:
      std::vector<BSPDrawCall> RegisterDrawCalls(
           std::vector<std::vector<float>> localVertexBuffer,
           std::vector<std::vector<uint32_t>> localIndexBuffer,
-          std::vector<std::string> textureName);
+          std::vector<std::string> textureName,
+          std::vector<LightMapData> lightMapData);
 
 private :
     void Commit(std::vector<float> vertexBuffer,
                 std::vector<uint32_t> indexBuffer,
-                std::vector<std::string> textureNames);
+                std::vector<std::string> textureNames,
+                std::vector<LightMapData> lightMapData);
 
     std::unique_ptr<Shader> shader;
     std::unique_ptr<WAD::WADArchive> m_wadArchive;
     std::vector<WADTexture> textures;
+    std::vector<LightMapTexture> lightMaps;
     GLuint vao;
     GLuint vbo;
     GLuint ebo;
