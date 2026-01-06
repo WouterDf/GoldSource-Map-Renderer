@@ -1,4 +1,3 @@
-
 #include "wad.h"
 #include "assetloader.h"
 #include "bsp.h"
@@ -7,17 +6,15 @@
 #include <cstdint>
 #include <cstring>
 #include <fstream>
-#include <ios>
 #include <iostream>
 #include <stdexcept>
 #include <sys/_types/_u_int16_t.h>
 
 namespace WAD {
-    WAD::WAD(std::string filename)
-    {
-        this->m_filename = filename;
-        this->m_info = ParseWADFile(AssetLoader::ReadWAD(filename));
-    }
+     WAD::WAD(const std::string& filename) : m_filename( filename )
+     {
+          this->m_info = ParseWADFile(AssetLoader::ReadWAD(filename));
+     }
 
     /**
     * Texture names can start with a prefix (NAME -> +0NAME or NAME -> -5NAME). These
@@ -31,8 +28,8 @@ namespace WAD {
              stdName = stdName.substr(2); 
         }
         std::transform( stdName.begin(), stdName.end(), stdName.begin(), ::toupper );
-        std::strncpy(name, stdName.c_str(), MAXTEXTURENAME - 1);
-        name[MAXTEXTURENAME - 1] = '\0';
+        std::strncpy(name, stdName.c_str(), BSP::MAXTEXTURENAME - 1);
+        name[BSP::MAXTEXTURENAME - 1] = '\0';
     }
 
      WADInfo WAD::ParseWADFile(std::ifstream file)
@@ -88,7 +85,8 @@ namespace WAD {
          }
          return wad;
     }
-    bool WAD::Contains(std::string textureName) {
+
+    bool WAD::Contains(const std::string& textureName) {
         const auto found = std::find_if(
             m_info.dirEntries.begin(),
             m_info.dirEntries.end(),
@@ -100,7 +98,7 @@ namespace WAD {
     }
 
     // Get WADInfo for a texture name
-     DirEntry WAD::GetInfo(std::string textureName)
+     DirEntry WAD::GetInfo(const std::string& textureName)
      {
         const auto found = std::find_if(
             m_info.dirEntries.begin(),
@@ -114,7 +112,10 @@ namespace WAD {
 
 
     // Load raw texture data
-     std::vector<uint8_t> WAD::LoadTexture(std::string textureName, unsigned int* width, unsigned int* height)
+     std::vector<uint8_t> WAD::LoadTexture(
+          const std::string& textureName,
+          unsigned int* width,
+          unsigned int* height)
     {
          const bool LOG_INFO = false;
          const bool LOG_PALETTE = false;
@@ -128,7 +129,7 @@ namespace WAD {
          MipTex tex{};
          file.read(reinterpret_cast<char*>(&tex), sizeof(tex));
 
-                  unsigned int mip0size = tex.width * tex.height;
+         unsigned int mip0size = tex.width * tex.height;
          std::vector<uint8_t> mip0;
          mip0.resize(mip0size);
 
@@ -150,11 +151,9 @@ namespace WAD {
               + ( tex.width / 8 ) * (tex.height / 8); // sizeof mip3
 
          u_int16_t numPalleteColors;
-
          file.seekg(paletteOffset);
          file.read(reinterpret_cast<char*>(&numPalleteColors), sizeof(numPalleteColors));
 
-         std::cout << "Number of palette colors: " << numPalleteColors << "\n";
          std::vector<uint8_t> palette;
          palette.resize(numPalleteColors * 3);
          file.read(reinterpret_cast<char*>(palette.data()), numPalleteColors * 3);
@@ -204,15 +203,15 @@ namespace WAD {
          return rgba;
     }
 
-     WADArchive::WADArchive(std::vector<std::string> filesnames) {
-          for( const auto& filename : filesnames )
+     WADArchive::WADArchive(const std::vector<std::string>& filenames) {
+          for( const auto& filename : filenames )
           {
                this->m_wads.push_back(WAD{filename});
           }
      }
 
     // Check if WAD-file contains a texture by name
-     bool WADArchive::Contains(std::string textureName)
+     bool WADArchive::Contains(const std::string& textureName)
      {
           const auto& found = std::find_if(
                this->m_wads.begin(),
@@ -226,7 +225,7 @@ namespace WAD {
 
     // Load raw texture data
     std::vector<uint8_t> WADArchive::LoadTexture(
-          std::string textureName,
+          const std::string& textureName,
           unsigned int* width,
           unsigned int* height)
     {
@@ -234,7 +233,7 @@ namespace WAD {
         return wad->LoadTexture(textureName, width, height);
     }
 
-    WAD* WADArchive::FindWAD(std::string textureName)
+    WAD* WADArchive::FindWAD(const std::string& textureName)
     {
         if( !this->Contains(textureName) )
         {
@@ -253,3 +252,5 @@ namespace WAD {
 
 
 } // namespace WAD
+
+// end of wad.cpp

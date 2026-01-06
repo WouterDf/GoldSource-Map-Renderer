@@ -1,4 +1,3 @@
-#include "assetloader.h"
 #include "bsp.h"
 #include "bsprenderer.h"
 #include "camera.h"
@@ -8,6 +7,7 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_timer.h>
 #include <iostream>
+#include <memory>
 #include <sys/types.h>
 
 struct FrameTime {
@@ -75,7 +75,7 @@ void UpdateCamera(Camera* camera, float deltaTime)
 int main()
 {
     std::cout << "Starting application. \n";
-    BSP::BSP map = AssetLoader::ReadBSP("maps/de_dust.bsp");
+    auto map = std::make_unique<BSP::BSP>("maps/de_dust.bsp");
 
     WindowContext windowContext{};
     auto camera = Camera{glm::vec3(0.0f, 0.0f, 1500.0f), glm::vec3(.0f, .0f, -1.0f)};
@@ -86,7 +86,7 @@ int main()
 
     BSPRenderer bsprenderer{};
     bsprenderer.SetCamera(&camera);
-    bsprenderer.SetMap(&map);
+    bsprenderer.SetMap(map.get());
     bsprenderer.Load();
 
     bool done = false;

@@ -5,6 +5,11 @@
 #include <vector>
 
 namespace BSP {
+
+     // BSP Internals
+     constexpr int MAXTEXTURENAME = 16;
+     constexpr int MIPLEVELS = 4;
+
      const uint8_t LUMP_ENTITIES     = 0;
      const uint8_t LUMP_PLANES       = 1;
      const uint8_t LUMP_TEXTURES     = 2;
@@ -39,9 +44,6 @@ namespace BSP {
           uint32_t nMipTextures;
      };
 
-     #define MAXTEXTURENAME 16
-     #define MIPLEVELS 4
-     
      struct MipTex {
           char szName[MAXTEXTURENAME];
           uint32_t nWidth, nHeight;
@@ -71,7 +73,19 @@ namespace BSP {
           uint16_t iVertex[2];
      };
 
-     struct BSP {
+     // End of BSP Internals
+
+     class BSP {
+     public:
+          explicit BSP(std::filesystem::path relativePath);
+          std::vector<Face> GetFaces() { return faces; };
+          std::vector<Textureinfo> GetTextureinfos() { return textureInfos; };
+          std::vector<MipTex> GetTextures() { return textures; };
+          std::vector<Edge> GetEdges() { return edges; };
+          std::vector<int32_t> GetSurfEdges() { return surfEdges; };
+          std::vector<ValveVector3d> GetVertices() { return vertices; };
+
+     private:
           Header header;
           char* entities;
           TextureHeader textureHeader;
@@ -84,6 +98,8 @@ namespace BSP {
           std::vector<int32_t> surfEdges;
      };
 
-     BSP ParseBSPFile(std::ifstream relativePath);
+
 } // namespace BSP
+
+// end of bsp.h
 

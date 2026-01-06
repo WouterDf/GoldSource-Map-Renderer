@@ -72,20 +72,19 @@ namespace AssetLoader {
      }
 
 
-     BSP::BSP ReadBSP(std::filesystem::path relativePath)
+     std::ifstream ReadFile(std::filesystem::path relativePath)
      {
-          std::filesystem::path mapPath = getAssetPath() / relativePath;
-          std::ifstream file(mapPath, std::ios::binary);
+          std::filesystem::path absolutePath = getAssetPath() / relativePath;
+          std::ifstream file(absolutePath, std::ios::binary);
           if( !file )
           {
-               std::cerr << "BSP file not found: " << mapPath.string() << "\n";
+               std::cerr << "File not found: " << absolutePath.string() << "\n";
           } else {
-               std::cout << "BSP file loading: " << mapPath.string() << "\n";
+               std::cout << "File file loading: " << absolutePath.string() << "\n";
           }
 
-          return BSP::ParseBSPFile(std::move(file));
-    }
-
+          return std::move(file);
+     }
 
      std::ifstream ReadWAD(std::filesystem::path relativePath)
      {

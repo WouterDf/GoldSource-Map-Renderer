@@ -84,10 +84,17 @@ this->m_wadArchive = std::make_unique<WAD::WADArchive>(
 
      // Populate the vertex and index buffers for the static level
      // geometry, face per face.
-     for( const auto& face : map->faces )
+     for( const auto& face : map->GetFaces() )
      {
-          BSP::Textureinfo textureInfo = map->textureInfos[face.iTextureInfo];
-          BSP::MipTex textureMip = map->textures[textureInfo.iMiptex];
+          BSP::Textureinfo textureInfo = map->GetTextureinfos()[face.iTextureInfo];
+          BSP::MipTex textureMip = map->GetTextures()[textureInfo.iMiptex];
+
+          if( textureInfo.nFlags == 0x01 )
+          {
+               // Flags texture as SPECIAL
+               // TODO: Draw or not based on texture name (sky, water, trigger, ..)
+               continue;
+          }
 
           // Add textures
           const auto missingTextureCacheHit = std::find(
@@ -135,15 +142,15 @@ this->m_wadArchive = std::make_unique<WAD::WADArchive>(
 
           for ( int i = 0; i < face.nEdges; i++ )
           {
-               int32_t surfedge = map->surfEdges.at(face.iFirstEdge + i);
+               int32_t surfedge = map->GetSurfEdges().at(face.iFirstEdge + i);
                uint32_t vertexIndex;
 
                if (surfedge >= 0)
                {
-                    vertexIndex = map->edges[surfedge].iVertex[0];
+                    vertexIndex = map->GetEdges()[surfedge].iVertex[0];
                } else
                {
-                    vertexIndex = map->edges[-surfedge].iVertex[1];
+                    vertexIndex = map->GetEdges()[-surfedge].iVertex[1];
                }
                faceVertexBSPIndices.push_back(vertexIndex);
           }
@@ -152,7 +159,7 @@ this->m_wadArchive = std::make_unique<WAD::WADArchive>(
           for( const uint32_t& bspVertexIndex : faceVertexBSPIndices )
           {
 
-               BSP::ValveVector3d vPos = map->vertices[bspVertexIndex];
+               BSP::ValveVector3d vPos = map->GetVertices()[bspVertexIndex];
                faceVertexBuffer.push_back( vPos.x );
                faceVertexBuffer.push_back( vPos.z );
                faceVertexBuffer.push_back( -vPos.y );
@@ -189,8 +196,6 @@ this->m_wadArchive = std::make_unique<WAD::WADArchive>(
           {
                elementBufferData.push_back( index + prevVertexBufferSize / ATTRIBUTES_PER_VERTEX);
           }
-
-          
 
           // Create RenderBatch for face
           BSPRenderBatch renderBatch{};
