@@ -8,7 +8,7 @@ class WorldGeometry
 {
 public:
      explicit WorldGeometry(BSPRenderer* renderer);
-     void Load(const BSP::BSP& bsp);
+     void Load(BSP::BSP& bsp);
      void DrawFrame();
 
 private:

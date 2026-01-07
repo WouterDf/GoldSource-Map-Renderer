@@ -8,13 +8,13 @@ WorldGeometry::WorldGeometry(BSPRenderer *renderer)
 {}
 
 // Register BSP geometry to renderer and create RenderBatches
-void WorldGeometry::Load(const BSP::BSP& bsp)
+void WorldGeometry::Load(BSP::BSP& bsp)
 {
      const uint8_t ATTRIBUTES_PER_VERTEX = 7;
      std::vector<std::vector<float>> localVertexBuffer{};
      std::vector<std::vector<uint32_t>> localIndexBuffer{};
      std::vector<std::string> textureNames;
-     std::vector<LightMapData> lightMaps;
+     std::vector<LightMapData*> lightMaps;
 
     // Populate the vertex and index buffers for the static level
      // geometry, face per face.
@@ -64,7 +64,7 @@ void WorldGeometry::Load(const BSP::BSP& bsp)
           localVertexBuffer.push_back(faceVertexBuffer);
           localIndexBuffer.push_back(faceIndexBuffer);
           textureNames.push_back(textureMip.szName);
-          lightMaps.push_back(bsp.GetLightMaps()[faceIndex]);
+          lightMaps.push_back(&bsp.GetLightMaps()[faceIndex]);
         };
 
 
@@ -75,6 +75,7 @@ void WorldGeometry::Load(const BSP::BSP& bsp)
                lightMaps);
 
         this->m_drawCalls = drawCalls;
+
 }
 
 void WorldGeometry::DrawFrame()

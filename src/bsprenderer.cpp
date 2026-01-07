@@ -40,7 +40,7 @@ std::vector<BSPDrawCall> BSPRenderer::RegisterDrawCalls(
           std::vector<std::vector<float>> localVertexBuffers,
           std::vector<std::vector<uint32_t>> localIndexBuffers,
           std::vector<std::string> textureNames,
-          std::vector<LightMapData> lightMapData)
+          std::vector<LightMapData*> lightMapData)
 {
      constexpr uint8_t ATTRIBUTES_PER_VERTEX = 7;
 
@@ -95,7 +95,7 @@ std::vector<BSPDrawCall> BSPRenderer::RegisterDrawCalls(
 void BSPRenderer::Commit(std::vector<float> vertexBuffer,
                          std::vector<uint32_t> indexBuffer,
                          std::vector<std::string> textureNames,
-                         std::vector<LightMapData> lightMapData)
+                         std::vector<LightMapData*> lightMapData)
 {
     // Shaders
     this->shader = std::make_unique<Shader>(
@@ -158,7 +158,7 @@ void BSPRenderer::Commit(std::vector<float> vertexBuffer,
               lightMap
          };
 
-         if( lightMap.width == 0)
+         if( lightMap->width == 0)
          {
               texture.unused = true;
          } else {

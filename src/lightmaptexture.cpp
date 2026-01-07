@@ -5,12 +5,12 @@
 #include <stdexcept>
 
 LightMapTexture::LightMapTexture(std::string uniformName, Shader* shader,
-                                 unsigned int texturenum, LightMapData data)
-     : Texture(uniformName, shader, texturenum), m_data( std::move(data) ){};
+                                 unsigned int texturenum, LightMapData* data)
+     : Texture(uniformName, shader, texturenum), p_data( data ){};
 
 void LightMapTexture::Load()
 {
-    if( m_data.rgb.empty() )
+    if( p_data->rgb.empty() )
     {
          throw std::runtime_error("Could not not lightmap texture");
     }
@@ -35,17 +35,17 @@ void LightMapTexture::Load()
          GL_TEXTURE_2D,
          0,
          GL_RGB,
-         m_data.width,
-         m_data.height,
+         p_data->width,
+         p_data->height,
          0,
          GL_RGB,
          GL_UNSIGNED_BYTE,
-         m_data.rgb.data());
+         p_data->rgb.data());
 
     glGenerateMipmap(GL_TEXTURE_2D);
-    m_data.rgb = std::vector<uint8_t>{};
-    m_data.width = 0;
-    m_data.height = 0;
+    p_data->rgb = std::vector<uint8_t>{};
+    p_data->width = 0;
+    p_data->height = 0;
 };
 
 

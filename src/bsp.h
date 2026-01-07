@@ -104,7 +104,7 @@ namespace BSP {
 
           glm::vec2 GetNonNormalizedTextureCoords(glm::vec3 vertexPosition, Face face) const;
 
-          std::vector<LightMapData> GetLightMaps() const { return m_lightMapData; };
+          std::vector<LightMapData>& GetLightMaps() { return m_lightMapData; };
 
      private:
           Header header;

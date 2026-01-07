@@ -26,13 +26,13 @@ public:
           std::vector<std::vector<float>> localVertexBuffer,
           std::vector<std::vector<uint32_t>> localIndexBuffer,
           std::vector<std::string> textureName,
-          std::vector<LightMapData> lightMapData);
+          std::vector<LightMapData*> lightMapData);
 
 private :
     void Commit(std::vector<float> vertexBuffer,
                 std::vector<uint32_t> indexBuffer,
                 std::vector<std::string> textureNames,
-                std::vector<LightMapData> lightMapData);
+                std::vector<LightMapData*> lightMapData);
 
     std::unique_ptr<Shader> shader;
     std::unique_ptr<WAD::WADArchive> m_wadArchive;

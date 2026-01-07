@@ -3,6 +3,8 @@ project(wouteropengl)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(wouteropengl
