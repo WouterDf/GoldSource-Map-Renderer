@@ -48,6 +48,26 @@ build with:
 cmake --build build
 ```
 
+#### Linux requirements
+
+From my tests on Fedora, it appears that it is easier to not use Vcpkg for the SDL3 dependency. For linux, the following packages are required:
+
+```
+sudo dnf install \
+  SDL3-devel \
+  glew-devel \
+  mesa-libGL-devel \
+  mesa-libGLU-devel \
+  libX11-devel \
+  wayland-devel \
+  libXcursor-devel \
+  libXrandr-devel \
+  libXinerama-devel \
+  libXi-devel \
+  pkg-config \
+  cmake \
+  ninja 
+```
 ## Inspiration and resources
 I used the resources listed here for documentation on the inner workings of the GoldSrc-engine. They're awesome.
 - [OGS](https://github.com/headcrab-junkyard/OGS) - An open-source GoldSrc engine clone.

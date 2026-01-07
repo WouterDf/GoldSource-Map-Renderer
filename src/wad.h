@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
-#include <sys/_types/_u_int32_t.h>
 #include <vector>
 
 #include "bsp.h"

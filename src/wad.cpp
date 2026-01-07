@@ -8,7 +8,6 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
-#include <sys/_types/_u_int16_t.h>
 
 namespace WAD {
      WAD::WAD(const std::string& filename) : m_filename( filename )

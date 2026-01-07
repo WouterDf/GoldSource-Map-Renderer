@@ -11,6 +11,9 @@
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
+#elif defined(__linux__)
+#include <unistd.h>
+#include <limits.h>
 #endif
 
 #include "bsp.h"
@@ -28,8 +31,6 @@ namespace AssetLoader {
         #endif
 
         #ifdef __linux__
-        #include <unistd.h>
-        #include <limits.h>
             char buffer[PATH_MAX];
             ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
             buffer[len] = '\0';

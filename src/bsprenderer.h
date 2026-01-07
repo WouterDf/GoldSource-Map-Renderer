@@ -1,12 +1,11 @@
 #pragma once
 
 #include <GL/glew.h>
-#include <OpenGL/gltypes.h>
 #include <SDL3/SDL_events.h>
 #include <glm/ext/vector_float3.hpp>
 #include <memory>
 #include <vector>
-#include "WADTexture.h"
+#include "wadtexture.h"
 #include "bsprenderbatch.h"
 #include "camera.h"
 #include "lightmaptexture.h"

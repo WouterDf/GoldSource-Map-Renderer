@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-#include "WADTexture.h"
+#include "wadtexture.h"
 #include "bsprenderbatch.h"
 #include "camera.h"
 #include "lightmaptexture.h"

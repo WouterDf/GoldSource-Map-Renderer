@@ -1,6 +1,9 @@
 {
   "dependencies": [
-      "sdl3",
+      {
+          "name": "sdl3",
+          "platform": "!linux"
+      },
       "simage",
       "glew",
       "glm",

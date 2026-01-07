@@ -353,12 +353,12 @@ namespace BSP {
           uint32_t lightmapHeight = (uint32_t)(_maxV - _minV + 1);
 
           LightMapDimensions dimensions {
-               .width = lightmapWidth,
-               .height = lightmapHeight,
                .minU = minU,
                .maxU = maxU,
                .minV = minV,
                .maxV = maxV,
+               .width = lightmapWidth,
+               .height = lightmapHeight,
           };
 
           return dimensions;
