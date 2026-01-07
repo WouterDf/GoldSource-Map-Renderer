@@ -14,7 +14,7 @@ struct LightMapData {
 class LightMapTexture : public Texture {
 public:
      LightMapTexture(std::string uniformName, Shader* shader,
-                     unsigned int texturenum, LightMapData* data);
+                     unsigned int texturenum, const LightMapData* data);
 
      void Load() override;
 
@@ -23,5 +23,5 @@ public:
      bool unused = false;
 
 private:
-     LightMapData* p_data;
+     const LightMapData* p_data;
 };

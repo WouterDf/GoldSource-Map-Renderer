@@ -1,6 +1,7 @@
 #include "bsp.h"
 #include "bsprenderer.h"
 #include "camera.h"
+#include "configuration.h"
 #include "windowcontext.h"
 #include "SDL3/SDL_events.h"
 #include "worldgeometry.h"
@@ -74,8 +75,9 @@ void UpdateCamera(Camera* camera, float deltaTime)
 
 int main()
 {
-    std::cout << "Starting application. \n";
-    auto map = std::make_unique<BSP::BSP>("maps/de_dust2.bsp");
+    Configuration configuration{};
+
+    auto map = std::make_unique<BSP::BSP>(configuration.GetMapName());
 
     WindowContext windowContext{};
     auto camera = Camera{glm::vec3(0.0f, 0.0f, 1500.0f), glm::vec3(.0f, .0f, -1.0f)};

@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 LightMapTexture::LightMapTexture(std::string uniformName, Shader* shader,
-                                 unsigned int texturenum, LightMapData* data)
+                                 unsigned int texturenum, const LightMapData* data)
      : Texture(uniformName, shader, texturenum), p_data( data ){};
 
 void LightMapTexture::Load()
@@ -43,9 +43,6 @@ void LightMapTexture::Load()
          p_data->rgb.data());
 
     glGenerateMipmap(GL_TEXTURE_2D);
-    p_data->rgb = std::vector<uint8_t>{};
-    p_data->width = 0;
-    p_data->height = 0;
 };
 
 

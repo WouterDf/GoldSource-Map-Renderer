@@ -123,7 +123,6 @@ namespace WAD {
          
          DirEntry entry = GetInfo(textureName);
          auto file = AssetLoader::ReadWAD(m_filename);
-         std::cout << "Reading texture: " << textureName << "\n";
 
          file.seekg(entry.nFilePos);
          MipTex tex{};

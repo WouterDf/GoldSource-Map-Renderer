@@ -3,6 +3,7 @@
       "sdl3",
       "simage",
       "glew",
-      "glm"
+      "glm",
+      "inipp"
   ]
 }

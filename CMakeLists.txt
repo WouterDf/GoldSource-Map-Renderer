@@ -18,6 +18,8 @@ add_executable(wouteropengl
     src/bsprenderer.h
     src/bsprenderbatch.h
     src/bsprenderbatch.cpp
+    src/configuration.h
+    src/configuration.cpp
     src/texture.h
     src/texture.cpp
     src/pngtexture.h
@@ -40,6 +42,9 @@ find_package(SDL3 CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(simage REQUIRED)
 find_package(glm REQUIRED)
+
+find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
+target_include_directories(wouteropengl PRIVATE ${INIPP_INCLUDE_DIRS})
 
 # On macOS, explicitly use the system OpenGL framework
 if(APPLE)
