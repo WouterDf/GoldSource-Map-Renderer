@@ -16,6 +16,10 @@
 #elif defined(__linux__)
 #include <unistd.h>
 #include <limits.h>
+#elif defined(_WIN32)
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #endif
 
 #include "assetloader.h"
@@ -24,7 +28,6 @@ namespace AssetLoader {
 std::filesystem::path GetExecutablePath()
 {
 #ifdef _WIN32
-#include <windows.h>
     wchar_t buffer[MAX_PATH];
     GetModuleFileNameW(nullptr, buffer, MAX_PATH);
     return std::filesystem::path(buffer).parent_path();
@@ -69,7 +72,7 @@ std::string ReadAssetToString(std::filesystem::path relativePath)
 unsigned char* ReadImage(std::filesystem::path relativePath, int* width, int* height, int* nChannels)
 {
     std::filesystem::path imagePath = GetAssetPath() / relativePath;
-    return simage_read_image(imagePath.c_str(), width, height, nChannels);
+    return simage_read_image(imagePath.string().c_str(), width, height, nChannels);
 }
 
 

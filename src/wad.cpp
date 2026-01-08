@@ -148,7 +148,7 @@ std::vector<uint8_t> WAD::LoadTexture(
                              + tex.offsets[3] // mip3 offset
                              + ( tex.width / 8 ) * (tex.height / 8); // sizeof mip3
 
-    u_int16_t numPalleteColors;
+    uint16_t numPalleteColors;
     file.seekg(paletteOffset);
     file.read(reinterpret_cast<char*>(&numPalleteColors), sizeof(numPalleteColors));
 
@@ -205,7 +205,7 @@ WADArchive::WADArchive() {
     auto filePaths = AssetLoader::GetFilesWithExtenstion(".wad");
     for( const auto& filename : filePaths )
     {
-        this->m_wads.push_back(WAD{filename});
+        this->m_wads.push_back(WAD{filename.string()});
     }
 }
 

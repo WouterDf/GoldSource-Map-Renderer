@@ -11,6 +11,12 @@
         "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g -fno-inline -fstandalone-debug",
         "CMAKE_EXE_LINKER_FLAGS_DEBUG": "-g"
       }
+    },
+    {
+      "name": "windows",
+      "displayName": "Windows (vcpkg)",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "build/windows"
     }
   ]
 }

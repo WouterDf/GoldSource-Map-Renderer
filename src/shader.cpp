@@ -12,8 +12,8 @@ Shader::Shader(std::string vertexPath, std::string fragmentPath)
     const char* vertexShaderSource = vertexShaderSourceStdStr.c_str();
     const char* fragmentShaderSource = fragmentShaderSourceStdStr.c_str();
 
-    uint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    uint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(vertexShader);

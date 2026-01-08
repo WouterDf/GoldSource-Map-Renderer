@@ -81,8 +81,8 @@ int main() {
 
   FrameTime frameTime{};
   bool firstFrame = true;
-  uint frameCount = 0;
-  uint lastFpsCountTime = 0;
+  unsigned int frameCount = 0;
+  unsigned int lastFpsCountTime = 0;
   while (!done) {
     SDL_Event event;
 
@@ -107,9 +107,9 @@ int main() {
 
     // Show FPS
     frameCount++;
-    const uint SHOW_FPS_AT_MS = 10000;
+    const unsigned int SHOW_FPS_AT_MS = 10000;
     if (frameTime.currentFrameTime - lastFpsCountTime > SHOW_FPS_AT_MS) {
-      uint fps =
+      unsigned int fps =
           frameCount * 1000 / (frameTime.currentFrameTime - lastFpsCountTime);
       std::cout << "Frames per second: " << fps << "\n";
       lastFpsCountTime = frameTime.currentFrameTime;

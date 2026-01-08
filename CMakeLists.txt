@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.30)
 project(wouteropengl)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
@@ -45,6 +47,10 @@ find_package(glm REQUIRED)
 
 find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
 target_include_directories(wouteropengl PRIVATE ${INIPP_INCLUDE_DIRS})
+
+if (WIN32)
+    target_compile_definitions(wouteropengl PRIVATE SDL_MAIN_HANDLED)
+endif()
 
 # On macOS, explicitly use the system OpenGL framework
 if(APPLE)
