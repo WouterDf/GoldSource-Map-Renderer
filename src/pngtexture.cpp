@@ -20,7 +20,7 @@ void PNGTexture::Load() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     int width, height, nChannels;
     unsigned char* data;
-    data = AssetLoader::readImage(relativePath, &width, &height, &nChannels);
+    data = AssetLoader::ReadImage(relativePath, &width, &height, &nChannels);
     if( !data )
     {
          std::cout << "Could not read texture. \n";

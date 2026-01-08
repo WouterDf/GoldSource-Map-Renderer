@@ -8,7 +8,7 @@
 Configuration::Configuration()
 {
      const std::string FILE = "config.ini";
-     std::filesystem::path path = AssetLoader::getAssetPath() / FILE;
+     std::filesystem::path path = AssetLoader::GetAssetPath() / FILE;
      std::ifstream input(path);
      inipp::Ini<char> ini;
      ini.parse(input);

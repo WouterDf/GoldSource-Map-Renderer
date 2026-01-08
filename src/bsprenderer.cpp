@@ -33,63 +33,63 @@
 
 void BSPRenderer::SetCamera(Camera *cam)
 {
-     camera = cam;
+    camera = cam;
 }
 
 std::vector<BSPDrawCall> BSPRenderer::RegisterDrawCalls(
-          std::vector<std::vector<float>> localVertexBuffers,
-          std::vector<std::vector<uint32_t>> localIndexBuffers,
-          std::vector<std::string> textureNames,
-          std::vector<const LightMapData*> lightMapData)
+    std::vector<std::vector<float>> localVertexBuffers,
+    std::vector<std::vector<uint32_t>> localIndexBuffers,
+    std::vector<std::string> textureNames,
+    std::vector<const LightMapData*> lightMapData)
 {
-     constexpr uint8_t ATTRIBUTES_PER_VERTEX = 7;
+    constexpr uint8_t ATTRIBUTES_PER_VERTEX = 7;
 
-     std::vector<float> globalVertexBuffer;
-     std::vector<uint32_t> globalIndexBuffer;
-     std::vector<std::string> globalTextureNames;
+    std::vector<float> globalVertexBuffer;
+    std::vector<uint32_t> globalIndexBuffer;
+    std::vector<std::string> globalTextureNames;
      
-     std::vector<BSPDrawCall> drawCalls;
-     uint32_t numFaces = localVertexBuffers.size();
+    std::vector<BSPDrawCall> drawCalls;
+    uint32_t numFaces = localVertexBuffers.size();
 
-     for( int faceId = 0; faceId < numFaces ; faceId++)
-     {
-          uint32_t prevIndexBufferSize = globalIndexBuffer.size();
-          uint32_t prevVertexBufferSize = globalVertexBuffer.size();
+    for( int faceId = 0; faceId < numFaces ; faceId++)
+    {
+        uint32_t prevIndexBufferSize = globalIndexBuffer.size();
+        uint32_t prevVertexBufferSize = globalVertexBuffer.size();
 
-          for( const auto& vertex: localVertexBuffers[faceId] )
-          {
-                globalVertexBuffer.push_back(vertex);
-          }
+        for( const auto& vertex: localVertexBuffers[faceId] )
+        {
+            globalVertexBuffer.push_back(vertex);
+        }
 
-          for( const auto& index: localIndexBuffers[faceId] )
-          {
+        for( const auto& index: localIndexBuffers[faceId] )
+        {
             globalIndexBuffer.push_back( index + prevVertexBufferSize / ATTRIBUTES_PER_VERTEX);
-          }
+        }
 
-          BSPDrawCall drawCall{};
-          drawCall.indexOffset = prevIndexBufferSize;
-          drawCall.indexLength = globalIndexBuffer.size() - prevIndexBufferSize;
+        BSPDrawCall drawCall{};
+        drawCall.indexOffset = prevIndexBufferSize;
+        drawCall.indexLength = globalIndexBuffer.size() - prevIndexBufferSize;
 
-          auto textureName = textureNames[faceId];
-          auto textureHit = std::find(globalTextureNames.begin(),
-                                      globalTextureNames.end(),
-                                      textureName);
-          if( textureHit != globalTextureNames.end() )
-          {
-               drawCall.textureIndex = textureHit - globalTextureNames.begin();
-          } else {
-               drawCall.textureIndex = globalTextureNames.size();
-               globalTextureNames.push_back(textureName);
-          }
+        auto textureName = textureNames[faceId];
+        auto textureHit = std::find(globalTextureNames.begin(),
+                                    globalTextureNames.end(),
+                                    textureName);
+        if( textureHit != globalTextureNames.end() )
+        {
+            drawCall.textureIndex = textureHit - globalTextureNames.begin();
+        } else {
+            drawCall.textureIndex = globalTextureNames.size();
+            globalTextureNames.push_back(textureName);
+        }
 
-          drawCall.lightMapIndex = faceId;
+        drawCall.lightMapIndex = faceId;
 
-          drawCalls.push_back(drawCall);
-     }
+        drawCalls.push_back(drawCall);
+    }
 
-     Commit(globalVertexBuffer, globalIndexBuffer, globalTextureNames, lightMapData);
+    Commit(globalVertexBuffer, globalIndexBuffer, globalTextureNames, lightMapData);
 
-     return drawCalls;
+    return drawCalls;
 }
 
 void BSPRenderer::Commit(std::vector<float> vertexBuffer,
@@ -99,73 +99,43 @@ void BSPRenderer::Commit(std::vector<float> vertexBuffer,
 {
     // Shaders
     this->shader = std::make_unique<Shader>(
-         "shaders/bsp.vert",
-         "shaders/bsp.frag"
-         );
+        "shaders/bsp.vert",
+        "shaders/bsp.frag"
+    );
 
     // load textures
-    this->m_wadArchive = std::make_unique<WAD::WADArchive>(
-        std::vector<std::string>{
-             "textures/halflife.wad",
-             "textures/ajawad.wad",
-             "textures/cached.wad",
-             "textures/chateau.wad",
-             "textures/cs_747.wad",
-             "textures/cs_assault.wad",
-             "textures/cs_bdog.wad",
-             "textures/cs_cbble.wad",
-             "textures/cs_dust.wad",
-             "textures/cs_havana.WAD",
-             "textures/cs_office.wad",
-             "textures/cstraining.wad",
-             "textures/cstrike.wad",
-             "textures/de_airstrip.wad",
-             "textures/de_aztec.wad",
-             "textures/de_piranesi.wad",
-             "textures/de_storm.wad",
-             "textures/de_vertigo.wad",
-             "textures/decals.wad",
-             "textures/fonts.wad",
-             //"textures/iga_static.wad",
-             "textures/itsitaly.wad",
-             "textures/liquids.wad",
-             "textures/prodigy.wad",
-             "textures/spraypaint.wad",
-             "textures/tempdecal.wad",
-             "textures/torntextures.wad",
-             "textures/tswad.wad",
-         });
+    this->m_wadArchive = std::make_unique<WAD::WADArchive>();
 
     for( const auto& textureName : textureNames )
     {
-         WADTexture texture{
+        WADTexture texture{
             textureName,
             m_wadArchive.get(),
             "texture1",
             shader.get(),
             0
-         };
-         texture.Load();
-         this->textures.push_back(texture); 
+        };
+        texture.Load();
+        this->textures.push_back(texture); 
     };
 
     for( const auto& lightMap : lightMapData )
     {
-         LightMapTexture texture{
-              "texture2",
-              shader.get(),
-              1,
-              lightMap
-         };
+        LightMapTexture texture{
+            "texture2",
+            shader.get(),
+            1,
+            lightMap
+        };
 
-         if( lightMap->width == 0)
-         {
-              texture.unused = true;
-         } else {
+        if( lightMap->width == 0)
+        {
+            texture.unused = true;
+        } else {
             texture.Load();
-         }
+        }
 
-         this->lightMaps.push_back(texture);
+        this->lightMaps.push_back(texture);
     }
 
     std::cout << "Loaded all textures into vram. Amount: " << this->textures.size() << "\n";
@@ -215,8 +185,8 @@ void BSPRenderer::DrawFrame(BSPDrawCall drawCall) {
     this->lightMaps[drawCall.lightMapIndex].Use();
 
     glDrawElements(GL_TRIANGLES,
-                    drawCall.indexLength,
-                    GL_UNSIGNED_INT,
-                    (void*)(drawCall.indexOffset*sizeof(unsigned int)));
+                   drawCall.indexLength,
+                   GL_UNSIGNED_INT,
+                   (void*)(drawCall.indexOffset*sizeof(unsigned int)));
 
 }

@@ -4,16 +4,16 @@
 
 namespace AssetLoader {
 
-     std::filesystem::path getExecutablePath();
+std::filesystem::path GetExecutablePath();
 
-     std::filesystem::path getAssetPath();
+std::filesystem::path GetAssetPath();
      
-     std::string readAssetToString(std::filesystem::path relativePath);
+std::string ReadAssetToString(std::filesystem::path relativePath);
 
-     unsigned char* readImage(std::filesystem::path relativePath, int* width, int* height, int* nChannels);
+unsigned char* ReadImage(std::filesystem::path relativePath, int* width, int* height, int* nChannels);
 
-     std::ifstream ReadFile(std::filesystem::path relativePath);
+std::ifstream ReadFile(std::filesystem::path relativePath);
 
-     std::ifstream ReadWAD(std::filesystem::path relativePath);
-     
+std::vector<std::filesystem::path> GetFilesWithExtenstion(std::string extension);
+
 } // namespace AssetLoader

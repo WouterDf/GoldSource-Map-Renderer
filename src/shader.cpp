@@ -6,8 +6,8 @@
 
 Shader::Shader(std::string vertexPath, std::string fragmentPath)
 {
-         std::string vertexShaderSourceStdStr = AssetLoader::readAssetToString(vertexPath);
-    std::string fragmentShaderSourceStdStr = AssetLoader::readAssetToString(fragmentPath);
+         std::string vertexShaderSourceStdStr = AssetLoader::ReadAssetToString(vertexPath);
+    std::string fragmentShaderSourceStdStr = AssetLoader::ReadAssetToString(fragmentPath);
 
     const char* vertexShaderSource = vertexShaderSourceStdStr.c_str();
     const char* fragmentShaderSource = fragmentShaderSourceStdStr.c_str();
