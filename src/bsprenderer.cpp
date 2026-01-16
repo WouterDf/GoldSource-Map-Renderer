@@ -165,6 +165,11 @@ void BSPRenderer::Commit(std::vector<float> vertexBuffer,
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.size() * sizeof(uint32_t), indexBuffer.data(), GL_STATIC_DRAW);
 }
 
+void BSPRenderer::SetLightMapsEnabled(bool enabled)
+{
+    m_enableLightMaps = enabled;
+}
+
 void BSPRenderer::ClearFrame() {
     glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -182,7 +187,10 @@ void BSPRenderer::ClearFrame() {
 
 void BSPRenderer::DrawFrame(BSPDrawCall drawCall) {
     this->textures[drawCall.textureIndex].Use();
-    this->lightMaps[drawCall.lightMapIndex].Use();
+    if( m_enableLightMaps )
+    {
+        this->lightMaps[drawCall.lightMapIndex].Use();
+    }
 
     glDrawElements(GL_TRIANGLES,
                    drawCall.indexLength,

@@ -19,10 +19,33 @@ Configuration::Configuration()
      }
 
      inipp::extract(ini.sections["user"].at("map-name"), m_map);
-};
 
+     float camStartX;
+     float camStartY;
+     float camStartZ;
+
+     inipp::extract(ini.sections["user"].at("camera-start-x"), camStartX);
+     inipp::extract(ini.sections["user"].at("camera-start-y"), camStartY);
+     inipp::extract(ini.sections["user"].at("camera-start-z"), camStartZ);
+
+     m_cameraStartPosition = glm::vec3(camStartX, camStartY, camStartZ);
+
+
+     inipp::extract(ini.sections["user"].at("enable-light-maps"), m_enableLightMaps);
+};
 
 const std::string Configuration::GetMapName()
 {
      return m_map;
+}
+
+const glm::vec3 Configuration::GetCameraStartPosition()
+{
+    return m_cameraStartPosition;
+}
+
+
+const bool Configuration::GetEnableLightMaps()
+{
+    return m_enableLightMaps;
 }

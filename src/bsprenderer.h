@@ -27,6 +27,8 @@ public:
           std::vector<std::string> textureName,
           std::vector<const LightMapData*> lightMapData);
 
+    void SetLightMapsEnabled(bool enabled);
+
 private :
     void Commit(std::vector<float> vertexBuffer,
                 std::vector<uint32_t> indexBuffer,
@@ -43,4 +45,5 @@ private :
     GLuint texture;
     int nIndices;
     Camera* camera;
+    bool m_enableLightMaps = true;
 };

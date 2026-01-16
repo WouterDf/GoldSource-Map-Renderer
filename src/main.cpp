@@ -6,6 +6,7 @@
 #include "windowcontext.h"
 #include "worldgeometry.h"
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_timer.h>
 #include <iostream>
 #include <memory>
@@ -33,21 +34,27 @@ struct FrameTime {
 void UpdateCamera(Camera *camera, float deltaTime) {
   float mouseX = 0;
   float mouseY = 0;
+  bool boost = false;
   auto camMove = glm::vec3(.0f);
   const bool *keyStates = SDL_GetKeyboardState(nullptr);
-  if (keyStates[SDL_SCANCODE_W]) {
+  if ( keyStates[SDL_SCANCODE_W] ) {
     camMove += glm::vec3(0, 0, 1);
   }
-  if (keyStates[SDL_SCANCODE_S]) {
+  if ( keyStates[SDL_SCANCODE_S] ) {
     camMove -= glm::vec3(0, 0, 1);
   }
-  if (keyStates[SDL_SCANCODE_A]) {
+  if ( keyStates[SDL_SCANCODE_A] ) {
     camMove -= glm::vec3(1, 0, 0);
   }
-  if (keyStates[SDL_SCANCODE_D]) {
+  if ( keyStates[SDL_SCANCODE_D] ) {
     camMove += glm::vec3(1, 0, 0);
   }
-  camera->Move(camMove, deltaTime);
+  if( keyStates[SDL_SCANCODE_LSHIFT]
+      || keyStates[SDL_SCANCODE_RSHIFT] ) {
+      boost = true;
+  }
+
+  camera->Move(camMove, deltaTime, boost);
   SDL_GetRelativeMouseState(&mouseX, &mouseY);
 
   float cameraPitch = 0;
@@ -68,11 +75,12 @@ int main() {
 
   WindowContext windowContext{};
   Camera camera{
-      glm::vec3(0.0F, 0.0F, 1500.0F),
+      configuration.GetCameraStartPosition(),
       glm::vec3(.0F, .0F, -1.0F)
   };
   BSPRenderer bsprenderer{};
   bsprenderer.SetCamera(&camera);
+  bsprenderer.SetLightMapsEnabled(configuration.GetEnableLightMaps());
 
   auto worldGeometry = std::make_unique<WorldGeometry>(&bsprenderer);
   worldGeometry->Load(*map);
@@ -114,6 +122,11 @@ int main() {
       std::cout << "Frames per second: " << fps << "\n";
       lastFpsCountTime = frameTime.currentFrameTime;
       frameCount = 0;
+
+      std::cout << "Camera is at position: (" << camera.GetPosition().x
+                << ", " << camera.GetPosition().y
+                << ", " << camera.GetPosition().z
+                << ") \n";
     }
 
     SDL_GL_SwapWindow(windowContext.window);

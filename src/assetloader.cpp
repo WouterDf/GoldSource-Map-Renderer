@@ -83,8 +83,6 @@ std::ifstream ReadFile(std::filesystem::path relativePath)
     if( !file )
     {
         std::cerr << "File not found: " << absolutePath.string() << "\n";
-    } else {
-        std::cout << "File file loading: " << absolutePath.string() << "\n";
     }
 
     return std::move(file);
