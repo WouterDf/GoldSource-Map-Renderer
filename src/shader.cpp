@@ -6,7 +6,7 @@
 
 Shader::Shader(std::string vertexPath, std::string fragmentPath)
 {
-         std::string vertexShaderSourceStdStr = AssetLoader::ReadAssetToString(vertexPath);
+    std::string vertexShaderSourceStdStr = AssetLoader::ReadAssetToString(vertexPath);
     std::string fragmentShaderSourceStdStr = AssetLoader::ReadAssetToString(fragmentPath);
 
     const char* vertexShaderSource = vertexShaderSourceStdStr.c_str();
@@ -25,7 +25,7 @@ Shader::Shader(std::string vertexPath, std::string fragmentPath)
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &fragmentSuccess);
 
     if( vertexSuccess && fragmentSuccess ) {
-         std::cout << "Compiled shaders succesfully. \n";
+        std::cout << "Compiled shaders succesfully. \n";
     } else {
         char vertInfoLog[512];
         char fragInfoLog[512];
@@ -56,16 +56,24 @@ Shader::Shader(std::string vertexPath, std::string fragmentPath)
 
 void Shader::Use() const
 {
-     glUseProgram(programId);  
+    glUseProgram(programId);  
 }
 
 void Shader::BindUniform(std::string name, int value) const {
-     glUniform1i(glGetUniformLocation(programId, name.c_str()), value);
+    glUniform1i(glGetUniformLocation(programId, name.c_str()), value);
 }
 
 
 void Shader::BindUniform4f(std::string name, const GLfloat* value) const
 {
-     unsigned int transformLoc = glGetUniformLocation(programId, name.c_str());
-     glUniformMatrix4fv(transformLoc, 1, GL_FALSE, value);
+    unsigned int transformLoc = glGetUniformLocation(programId, name.c_str());
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, value);
 };
+
+
+void Shader::BindUniformB(std::string name, bool value) const
+{
+    unsigned int transformLoc = glGetUniformLocation(programId, name.c_str());
+    int iValue = value ? 1 : 0;
+    glUniform1i(transformLoc, iValue);
+}

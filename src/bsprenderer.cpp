@@ -183,6 +183,7 @@ void BSPRenderer::ClearFrame() {
     shader->BindUniform4f("model", glm::value_ptr(model));
     shader->BindUniform4f("view", glm::value_ptr(view));
     shader->BindUniform4f("projection", glm::value_ptr(projection));
+    shader->BindUniformB("uEnableLightmaps", m_enableLightMaps);
 }
 
 void BSPRenderer::DrawFrame(BSPDrawCall drawCall) {

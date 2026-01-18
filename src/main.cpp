@@ -106,10 +106,8 @@ int main() {
       continue;
     }
     frameTime.FrameBegin();
-    UpdateCamera(&camera, frameTime.deltaTime);
+    UpdateCamera(&camera, static_cast<float>(frameTime.deltaTime));
 
-    // testrenderer.DrawFrame(frameTime.deltaTime);
-    // bsprenderer.DrawFrame(frameTime.deltaTime);
     bsprenderer.ClearFrame();
     worldGeometry->DrawFrame();
 
